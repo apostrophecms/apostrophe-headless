@@ -10,23 +10,34 @@ module.exports = {
     modules: [ 'apostrophe-pieces-rest-api-improvement' ]
   },
 
-  afterConstruct: function(self) {
-    self.enableCollection();
+  afterConstruct: function(self, callback) {
     self.addRoutes();
+    if (self.options.bearerTokens) {
+      self.apos.on('csrfExceptions', self.addCsrfException);
+    }
+    return self.enableCollection(callback);
   },
   
   construct: function(self, options) {
 
     var baseEndpoint = '/api/v' + (options.version || 1);
     self.endpoint = baseEndpoint;
-    
-    self.enableCollection = function() {
-      self.db = self.apos.db.collection('aposBearerTokens');
+        
+    // Exclude the REST APIs from CSRF protection. However,
+    // this module will call the CSRF protection middleware
+    // itself if a user is not present based on a bearer token.
+    self.addCsrfException = function(exceptions) {
+      exceptions.push(baseEndpoint + '/**');
+    };
+
+    self.enableCollection = function(callback) {
+      self.bearerTokensCollection = self.apos.db.collection('aposBearerTokens');
+      return self.bearerTokensCollection.ensureIndex({ expires: 1 }, { expireAfterSeconds: 0 }, callback);
     };
     
     self.addRoutes = function() {
       if (self.options.bearerTokens) {
-        self.apos.app.use(baseEndpoint, self.bearerMiddleware);
+        self.apos.app.use(self.bearerMiddleware);
         self.apos.app.post(baseEndpoint + '/login', function(req, res) {
           var bearer;
           var user;
@@ -59,10 +70,10 @@ module.exports = {
           }
           function insertToken(callback) {
             bearer = cuid();
-            return self.db.insert({
+            return self.bearerTokensCollection.insert({
               _id: bearer,
               userId: user._id,
-              createdAt: new Date()
+              expires: new Date(new Date().getTime() + (self.options.bearerTokens.lifetime || (86400 * 7 * 2)) * 1000)
             }, callback);
           }
         });
@@ -70,7 +81,7 @@ module.exports = {
           if (!req.user) {
             return res.status(403).send('forbidden');
           }
-          return self.db.remove({
+          return self.bearerTokensCollection.remove({
             userId: req.user._id,
             _id: req.token
           }, function(err) {
@@ -95,31 +106,48 @@ module.exports = {
     // middleware to actually set `req.user`. If there
     // is no token or it is invalid we just don't set
     // `req.user` (it's an anonymous access).
+    //
+    // If a user is not assigned via a bearer token,
+    // Apostrophe's standard CSRF middleware is invoked
+    // to ensure that API accesses by logged-in website users
+    // are not vulnerable to CSRF attacks.
     
     self.bearerMiddleware = function(req, res, next) {
+      if (req.url.substr(0, self.endpoint.length + 1) !== (self.endpoint + '/')) {
+        return next();
+      }
+      if (req.url === self.endpoint + '/login') {
+        // Login is exempt, chicken and egg
+        return next();
+      }
       self.bearerTokenMiddleware(req, res, function() {
         var userId, user;
         if (!req.token) {
-          return next();
+          return self.apos.modules['apostrophe-express'].csrfWithoutExceptions(req, res, next);
         }
         return async.series([
           getBearer,
           deserializeUser
         ], function(err) {
           if (err) {
-            console.error('error from async series:');
             console.error(err);
-            return next();
+            return res.status(500).send('error');
           }
           if (!user) {
-            return next();
+            return self.apos.modules['apostrophe-express'].csrfWithoutExceptions(req, res, next);
           }
           req.user = user;
           return next();
         });
         
         function getBearer(callback) {
-          return self.db.findOne({ _id: req.token }, function(err, bearer) {
+          // The expireAfterSeconds feature of mongodb
+          // is not instantaneous so we should check
+          // "expires" ourselves too
+          return self.bearerTokensCollection.findOne({
+            _id: req.token,
+            expires: { $gte: new Date() }
+          }, function(err, bearer) {
             if (err) {
               return callback(err);
             }

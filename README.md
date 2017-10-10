@@ -102,15 +102,15 @@ modules: {
 }
 ```
 
-By default bearer tokens last forever, which is common practice for apps. To change that, configure the expiration timeout:
+By default bearer tokens last 2 weeks, which is very secure but can be frustrating for casual apps that don't contain sensitive data. Here's how to set the bearer token lifetime:
 
 ```javascript
 // in app.js
 modules: {
   'apostrophe-pieces-rest-api': {
     bearerTokens: {
-      // 1 day, in seconds
-      expires: 86400
+      // 4 weeks, in seconds
+      lifetime: 86400 * 7 * 4
     }
   }
 }

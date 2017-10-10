@@ -23,8 +23,7 @@ describe('test apostrophe-pieces-rest-api', function() {
       modules: {
         'apostrophe-express': {
           secret: 'xxx',
-          port: 7900,
-          csrf: false
+          port: 7900
         },
         'apostrophe-pieces-rest-api': {
           bearerTokens: true,
@@ -140,6 +139,8 @@ describe('test apostrophe-pieces-rest-api', function() {
     });
   });
   
+  var updateProduct;
+  
   it('can POST products with a bearer token, some published', function(done) {
     // range is exclusive at the top end, I want 10 things
     var nths = _.range(1, 11);
@@ -164,6 +165,9 @@ describe('test apostrophe-pieces-rest-api', function() {
         assert(response.title === 'Cool Product #' + i);
         assert(response.slug === 'cool-product-' + i);
         assert(response.type === 'product');
+        if (i === 1) {
+          updateProduct = response;
+        }
         return callback(null);
       });
     }, function(err) {
@@ -227,7 +231,49 @@ describe('test apostrophe-pieces-rest-api', function() {
       done();
     });
   });
+
+  it('can update a product', function(done) {
+    http('/api/v1/products/' + updateProduct._id, 'PUT', {}, _.assign(
+      {}, 
+      updateProduct,
+      {
+        title: 'I like cheese',
+        _id: 'should-not-change'
+      }
+    ), bearer, function(err, response) {
+      assert(!err);
+      assert(response);
+      assert(response._id === updateProduct._id);
+      assert(response.title === 'I like cheese');
+      assert(response.body.items.length);
+      done();
+    });
+  });
+
+  it('fetch of updated product shows updated content', function(done) {
+    http('/api/v1/products/' + updateProduct._id, 'GET', {}, {}, bearer, function(err, response) {
+      assert(!err);
+      assert(response);
+      assert(response.title === 'I like cheese');
+      assert(response.body.items.length);
+      done();
+    });
+  });
   
+  it('can delete a product', function(done) {
+    http('/api/v1/products/' + updateProduct._id, 'DELETE', {}, {}, bearer, function(err, response) {
+      assert(!err);
+      done();
+    });
+  });
+  
+  it('cannot fetch a deleted product', function(done) {
+    http('/api/v1/products/' + updateProduct._id, 'GET', {}, {}, bearer, function(err, response) {
+      assert(err);
+      done();
+    });
+  });
+
   it('can log out to destroy a bearer token', function(done) {
     http('/api/v1/logout', 'POST', {}, {}, bearer, function(err, result) {
       assert(!err);
@@ -250,11 +296,6 @@ describe('test apostrophe-pieces-rest-api', function() {
       done();
     });
   });
-
-  it('should fail on a token that is too old', function() {
-    console.log('UNIMPLEMENTED');
-    assert(false);
-  });  
    
 });
 
