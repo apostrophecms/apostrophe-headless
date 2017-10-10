@@ -4,7 +4,7 @@ var cuid = require('cuid');
 var _ = require('lodash');
 var async = require('async');
 
-describe('test apostrophe-pieces-rest-api', function() {
+describe('test apostrophe-headless', function() {
 
   var apos;
   var adminGroup;
@@ -25,8 +25,8 @@ describe('test apostrophe-pieces-rest-api', function() {
           secret: 'xxx',
           port: 7900
         },
-        'apostrophe-pieces-rest-api': {
-          bearerTokens: true,
+        'apostrophe-headless': {
+          bearerTokens: true
         },
         'products': {
           extend: 'apostrophe-pieces',

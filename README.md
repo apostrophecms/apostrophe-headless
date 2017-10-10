@@ -1,11 +1,19 @@
-## Work in progress, not meeting specs yet.
+## Apostrophe as a headless CMS
 
-Let's assume you have a module called `products` that extends `apostrophe-pieces`. Now you want a REST API so your app can easily get information about pieces.
+[Apostrophe](http://apostrophecms.org) is great for building websites, but many projects these days just need a "headless" CMS: an easy way to create new content types by defining schemas and immediately have a friendly interface for managing them on the back end... and REST APIs on the front end for React, React Native and other frontend frameworks to talk to.
+
+Just as often, projects call for a mix of the two: Apostrophe as a CMS for the pages of the site, with React-style apps "mixed in" on certain pages.
+
+The `apostrophe-headless` module provides REST APIs for content types created with Apostrophe's [pieces](http://apostrophecms.org/docs/tutorials/getting-started/reusable-content-with-pieces.html) feature. With this module, you might choose to just click "Page Settings" and lock down the "home page" of your site to "logged in users only," then use Apostrophe as a pure headless CMS... or you might mix and match. It's up to you.
+
+## Adding a REST API for products
+
+Let's assume you have a module called `products` that extends `apostrophe-pieces` as described in our [reusable content with pieces](http://apostrophecms.org/docs/tutorials/getting-started/reusable-content-with-pieces.html) tutorial. Now you want a REST API so your app can easily get information about pieces.
 
 ## Install the package
 
 ```
-npm install apostrophe-pieces-rest-api
+npm install apostrophe-headless
 ```
 
 ## Turn it on
@@ -17,7 +25,7 @@ modules: {
   // Load this module; it improves pieces, so
   // now we can optionally turn on the api
   // for each pieces module
-  'apostrophe-pieces-rest-api': {},
+  'apostrophe-headless': {},
 
   'products': {
     // Usually you'll put most of this in lib/products/index.js
@@ -65,7 +73,9 @@ These operations follow the usual REST patterns. But first, we need to talk abou
 
 This is simple: if the user is not logged in, they will be able to `GET` public, published content, and that's all.
 
-For many apps, **that's fine. You're using Apostrophe to create the content anyway.** Your content editors log into a site that's just for content creation, and your app users pull content from it with GET. Great. **You're done here.**
+For many apps, **that's fine. You're using Apostrophe's admin bar to create the content anyway.**
+
+Your content editors log into a site that's just for content creation, and your app users pull content from it via REST APIs. Great! **You're done here.**
 
 But for those who need to create and manage content via REST too... read on!
 
@@ -77,7 +87,7 @@ If you're building a React app or similar that is part of a webpage delivered by
 
 ### CSRF protection and logged-in users
 
-If an API request comes from an Apostrophe user who logged in conventially via the website, and not via the REST login APIs below, then Apostrophe will check for CSRF (Cross-Site Request Forgery) attacks. 
+**If an API request comes from an Apostrophe user who logged in conventionally via the website,** and not via the REST login APIs below, then Apostrophe will check for CSRF (Cross-Site Request Forgery) attacks. 
 
 If your API request is being sent by jQuery as provided by Apostrophe, you're good to go: Apostrophe automatically adds the necessary header.
 
@@ -85,7 +95,9 @@ If your API request is sent via `fetch` or another alternative to jQuery, you'll
 
 ### Logging in and obtaining a bearer token via REST
 
-By default, the POST, DELETE and UPDATE APIs are available only to logged-in users. This is quite useful if you want to provide some editing features in a React or similar app that is part of your Apostrophe site. But for a standalone app that uses Apostrophe as a headless backend, logging in via Apostrophe's interface might not be an option.
+By default, the `POST`, `DELETE`, `PUT` and `UPDATE` APIs are available to logged-in users of the site. This is quite useful if you want to provide some editing features in a React or similar app that is part of your Apostrophe site.
+
+But for a standalone app that uses Apostrophe as a headless backend, and isn't part of your Apostrophe site in any other way, logging in via Apostrophe's interface might not be an option.
 
 For such cases, you can log in via REST and obtain a "bearer token" to be sent with requests.
 
@@ -96,7 +108,7 @@ For such cases, you can log in via REST and obtain a "bearer token" to be sent w
 ```javascript
 // in app.js
 modules: {
-  'apostrophe-pieces-rest-api': {
+  'apostrophe-headless': {
     bearerTokens: true
   }
 }
@@ -107,7 +119,7 @@ By default bearer tokens last 2 weeks, which is very secure but can be frustrati
 ```javascript
 // in app.js
 modules: {
-  'apostrophe-pieces-rest-api': {
+  'apostrophe-headless': {
     bearerTokens: {
       // 4 weeks, in seconds
       lifetime: 86400 * 7 * 4
@@ -184,6 +196,7 @@ Just bear these facts in mind:
 * Other properties are specific to each widget type, based on its schema. It's often helpful to use the MongoDB shell to investigate a few examples in your site's database.
 * Rich text widgets contain markup in a `content` property.
 * Array schema fields have `type: "array"` and an `items` array containing their content. Each item must have a unique `id` property.
+* If you won't be serving any pages through Apostrophe (a headless setup), you'll need to fully specify your areas and singletons in the schema of your piece type, including passing all the options you would otherwise pass in a template. Don't use `contextual: true` for headless areas; you'll be doing all of your editing in the "edit" dialog box for the piece.
 
 Here's an example of a simple area containing a standard `apostrophe-rich-text` widget, a "nav" widget specific to a particular site which contains an `array` schema field, and a standard `apostrophe-images` widget:
 
@@ -229,7 +242,7 @@ We'll see how `pieceIds` works in the `apostrophe-images` widget in a moment whe
 
 ## Joins in REST
 
-When retrieving pieces, joined content is included, via the join field's name, as you would expect.
+When retrieving pieces, joined content is included, via the join field's name, as you might expect.
 
 When inserting or updating pieces, it is possible to set a join. You will need to set the `idField` (for `joinByOne`) or `idsField` (for `joinByArray`) corresponding to the join. If you did not explicitly configure these when configuring the join in your schema, they are based on the name of the join:
 

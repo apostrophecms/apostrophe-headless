@@ -7,7 +7,7 @@ module.exports = {
 
   moogBundle: {
     directory: 'lib/modules',
-    modules: [ 'apostrophe-pieces-rest-api-improvement' ]
+    modules: [ 'apostrophe-pieces-headless' ]
   },
 
   afterConstruct: function(self, callback) {
