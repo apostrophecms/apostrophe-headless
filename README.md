@@ -130,7 +130,7 @@ modules: {
 
 2. Send a `POST` request to:
 
-/api/v1/login
+`/api/v1/login`
 
 With `username` and `password` properties in the body.
 
