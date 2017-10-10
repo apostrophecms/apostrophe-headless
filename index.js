@@ -1,142 +1,146 @@
 var async = require('async');
 var _ = require('lodash');
+var cuid = require('cuid');
+var expressBearerToken = require('express-bearer-token');
 
 module.exports = {
 
-  improve: 'apostrophe-pieces',
-
-  afterConstruct: function(self) {
-    if (!self.options.restApi) {
-      return;
-    }
-    self.addRestApiRoutes();
+  moogBundle: {
+    directory: 'lib/modules',
+    modules: [ 'apostrophe-pieces-rest-api-improvement' ]
   },
 
+  afterConstruct: function(self) {
+    self.enableCollection();
+    self.addRoutes();
+  },
+  
   construct: function(self, options) {
 
-    self.addRestApiRoutes = function() {
-      if ((!options.restApi) || (options.restApi.enabled === false)) {
-        return;
-      }
-      var baseEndpoint = '/api/v' + (options.restApi.version || 1);
-      var endpoint = options.restApi.endpoint || (baseEndpoint + '/' + (options.restApi.name || self.__meta.name));
-      
-      // GET many
-      self.apos.app.get(endpoint, function(req, res) {
-        var cursor = self.findForRestApi(req);
-        var result = {};
-        return async.series([ countPieces, findPieces ], function(err) {
-          if (err) {
-            return res.status(500).send('error');
-          }
-          return res.send(result);
-        });
-        
-        function countPieces(callback) {
-          return cursor.toCount(function(err, count) {
+    var baseEndpoint = '/api/v' + (options.version || 1);
+    self.endpoint = baseEndpoint;
+    
+    self.enableCollection = function() {
+      self.db = self.apos.db.collection('aposBearerTokens');
+    };
+    
+    self.addRoutes = function() {
+      if (self.options.bearerTokens) {
+        self.apos.app.use(baseEndpoint, self.bearerMiddleware);
+        self.apos.app.post(baseEndpoint + '/login', function(req, res) {
+          var bearer;
+          var user;
+          return async.series([
+            checkCredentials,
+            insertToken
+          ], function(err) {
             if (err) {
-              return callback(err);
+              return res.status((typeof(err) !== 'object') ? err : 500).send('error');
+            } else {
+              return res.send({ bearer: bearer });
             }
-            result.total = count;
-            result.pages = cursor.get('totalPages');
-            result.perPage = cursor.get('perPage');
-            return callback(null);
           });
-        }
-
-        function findPieces(callback) {
-          return cursor.toArray(function(err, pieces) {
-            if (err) {
-              return callback(err);
+          function checkCredentials(callback) {
+            var username = self.apos.launder.string(req.body.username);
+            var password = self.apos.launder.string(req.body.password);
+            if (!(username && password)) {
+              return callback(400);
             }
-            // Attach `_url` and `_urls` properties
-            self.apos.attachments.all(pieces, { annotate: true });
-            result.results = pieces;
-            return callback(null);
-          });
-        }
-        
-      });
-
-      // GET one
-      self.apos.app.get(endpoint + '/:id', function(req, res) {
-        var id = self.apos.launder.id(req.params.id);
-        if (!id) {
-          return res.status(400).send('bad request');
-        }
-        return self.findForRestApi(req).and({ _id: id }).toObject(function(err, piece) {
-          if (err) {
-            return res.status(500).send('error');
+            return self.apos.login.verifyLogin(username, password, function(err, _user) {
+              if (err) {
+                return callback(err);
+              }
+              if (!_user) {
+                return callback(401);
+              }
+              user = _user;
+              return callback(null);
+            });
           }
-          return res.send(piece);
-        });
-      });
-      
-      // POST one
-      self.apos.app.post(endpoint, function(req, res) {
-        return self.convertInsertAndRefresh(req, function(req, res, err, piece) {
-          if (err) {
-            return res.status(500).send('error');
+          function insertToken(callback) {
+            bearer = cuid();
+            return self.db.insert({
+              _id: bearer,
+              userId: user._id,
+              createdAt: new Date()
+            }, callback);
           }
-          return res.send(piece);
         });
-      });
-
-      // UPDATE one
-      self.apos.app.update(endpoint + '/:id', function(req, res) {
-        var id = self.apos.launder.id(req.params.id);
-
-        return self.findForEditing(req, { _id: id })
-          .toObject(function(err, _piece) {
+        self.apos.app.post(baseEndpoint + '/logout', function(req, res) {
+          if (!req.user) {
+            return res.status(403).send('forbidden');
+          }
+          return self.db.remove({
+            userId: req.user._id,
+            _id: req.token
+          }, function(err) {
             if (err) {
               return res.status(500).send('error');
             }
-            if (!_piece) {
-              return res.status(404).send('notfound');
-            }
-            req.piece = _piece;
-            return self.convertUpdateAndRefresh(req, function(req, res, err, piece) {
-              if (err) {
-                return res.status(500).send('error');
-              }
-              return res.send(piece);
-            });
-          }
-        );
-
-      });
-
-      // DELETE one
-      self.apos.app.delete(endpoint + '/:id', function(req, res) {
-        var id = self.apos.launder.id(req.params.id);
-        return async.series({
-          before: function(callback) {
-            return self.beforeTrash(req, id, callback);
-          },
-          trash: function(callback) {
-            return self.trash(req, id, callback);
-          },
-          after: function(callback) {
-            return self.afterTrash(req, id, callback)
-          }
-        }, function(err) {
-          if (err) {
-            return res.status(500).send('error');
-          }
-          return res.send('ok');
+            return res.send({});
+          });
         });
-      });
-
+      }
     };
     
-    self.findForRestApi = function(req) {
-      var cursor = self.find(req, {}).queryToFilters(req.query, 'public');
-      var perPage = cursor.get('perPage');
-      var maxPerPage = options.restApi.maxPerPage || 5;
-      if ((!perPage) || (perPage > maxPerPage)) {
-        cursor.perPage(maxPerPage);
-      }
-      return cursor;
+    // Instantiate the express-bearer-token middleware for use
+    // in parsing bearer tokens. Configuration may be passed to it via
+    // the `expressBearerToken` option.
+    self.bearerTokenMiddleware = expressBearerToken(self.options.expressBearerToken || {});
+    
+    // The `bearerMiddleware` method is Express middleware
+    // that detects a bearer token per RFC6750 and
+    // sets `req.user` exactly as the `apostrophe-login`
+    // module would. Extends the `express-bearer-token`
+    // middleware to actually set `req.user`. If there
+    // is no token or it is invalid we just don't set
+    // `req.user` (it's an anonymous access).
+    
+    self.bearerMiddleware = function(req, res, next) {
+      self.bearerTokenMiddleware(req, res, function() {
+        var userId, user;
+        if (!req.token) {
+          return next();
+        }
+        return async.series([
+          getBearer,
+          deserializeUser
+        ], function(err) {
+          if (err) {
+            console.error('error from async series:');
+            console.error(err);
+            return next();
+          }
+          if (!user) {
+            return next();
+          }
+          req.user = user;
+          return next();
+        });
+        
+        function getBearer(callback) {
+          return self.db.findOne({ _id: req.token }, function(err, bearer) {
+            if (err) {
+              return callback(err);
+            }
+            userId = bearer && bearer.userId;
+            return callback(null);
+          });
+        }
+        function deserializeUser(callback) {
+          if (!userId) {
+            return callback(null);
+          }
+          return self.apos.login.deserializeUser(userId, function(err, _user) {
+            if (err) {
+              return callback(err);
+            }
+            user = _user;
+            return callback(null);
+          });
+        }
+      });
     };
   }
+
 };

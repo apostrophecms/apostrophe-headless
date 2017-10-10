@@ -1,0 +1,279 @@
+var assert = require('assert');
+var request = require('request');
+var cuid = require('cuid');
+var _ = require('lodash');
+var async = require('async');
+
+describe('test apostrophe-pieces-rest-api', function() {
+
+  var apos;
+  var adminGroup;
+  var bearer;
+
+  this.timeout(5000);
+
+  after(function() {
+    apos.db.dropDatabase();
+  });
+
+  it('initializes', function(done) {
+    apos = require('apostrophe')({
+      testModule: true,
+      
+      modules: {
+        'apostrophe-express': {
+          secret: 'xxx',
+          port: 7900,
+          csrf: false
+        },
+        'apostrophe-pieces-rest-api': {
+          bearerTokens: true,
+        },
+        'products': {
+          extend: 'apostrophe-pieces',
+          restApi: true,
+          name: 'product',
+          addFields: [
+            {
+              name: 'body',
+              type: 'area',
+              options: {
+                widgets: {
+                  'apostrophe-rich-text': {},
+                  'apostrophe-images': {}
+                }
+              }
+            },
+            {
+              name: 'color',
+              type: 'select',
+              choices: [
+                {
+                  label: 'Red',
+                  value: 'red'
+                },
+                {
+                  label: 'Blue',
+                  value: 'blue'
+                }
+              ]
+            }
+          ]
+        },
+        'apostrophe-users': {
+          groups: [
+            {
+              title: 'admin',
+              permissions: [ 'admin' ]
+            }
+          ]
+        }
+      },
+      afterInit: function(callback) {
+        // Should NOT have an alias!
+        assert(!apos.restApi);
+        assert(apos.modules['products']);
+        assert(apos.modules['products'].addRestApiRoutes);
+        return callback(null);
+      },
+      afterListen: function(err) {
+        assert(!err);
+        done();
+      }
+    });
+  });
+  
+  it('can locate the admin group', function(done) {
+    return apos.docs.db.findOne({ title: 'admin', type: 'apostrophe-group' }, function(err, group) {
+      assert(!err);
+      assert(group);
+      adminGroup = group;
+      done();
+    });
+  });
+
+  it('can insert a test user via apostrophe-users', function(done) {
+    var user = apos.users.newInstance();
+
+    user.firstName = 'test';
+    user.lastName = 'test';
+    user.title = 'test test';
+    user.username = 'test';
+    user.password = 'test';
+    user.email = 'test@test.com';
+    user.groupIds = [ adminGroup._id ];
+
+    assert(user.type === 'apostrophe-user');
+    assert(apos.users.insert);
+    apos.users.insert(apos.tasks.getReq(), user, function(err) {
+      assert(!err);
+      done();
+    });
+
+  });    
+
+  it('can log in via REST as that user, obtain bearer token', function(done) {
+    http('/api/v1/login', 'POST', {}, {
+      username: 'test',
+      password: 'test'
+    }, undefined, function(err, result) {
+      assert(!err);
+      assert(result && result.bearer);
+      bearer = result.bearer;
+      done();
+    });
+  });
+  
+  it('cannot POST a product without a bearer token', function(done) {
+    http('/api/v1/products', 'POST', {}, {
+      title: 'Fake Product',
+      body: [
+        {
+          type: 'apostrophe-rich-text',
+          id: cuid(),
+          content: '<p>This is fake</p>'
+        }
+      ]
+    }, undefined, function(err, response) {
+      assert(err);
+      done();
+    });
+  });
+  
+  it('can POST products with a bearer token, some published', function(done) {
+    // range is exclusive at the top end, I want 10 things
+    var nths = _.range(1, 11);
+    return async.eachSeries(nths, function(i, callback) {
+      http('/api/v1/products', 'POST', {}, {
+        title: 'Cool Product #' + i,
+        published: !!(i & 1),
+        body: {
+          type: 'area',
+          items: [
+            {
+              type: 'apostrophe-rich-text',
+              id: cuid(),
+              content: '<p>This is thing ' + i + '</p>'
+            }
+          ]
+        }
+      }, bearer, function(err, response) {
+        assert(!err);
+        assert(response);
+        assert(response._id);
+        assert(response.title === 'Cool Product #' + i);
+        assert(response.slug === 'cool-product-' + i);
+        assert(response.type === 'product');
+        return callback(null);
+      });
+    }, function(err) {
+      assert(!err);
+      done();
+    });
+  });
+
+  it('can GET five of those products without a bearer token', function(done) {
+    return http('/api/v1/products', 'GET', {}, {}, undefined, function(err, response) {
+      assert(!err);
+      assert(response);
+      assert(response.results);
+      assert(response.results.length === 5);
+      done();
+    });
+  }); 
+
+  it('can GET five of those products with a bearer token and no query parameters', function(done) {
+    return http('/api/v1/products', 'GET', {}, {}, undefined, function(err, response) {
+      assert(!err);
+      assert(response);
+      assert(response.results);
+      assert(response.results.length === 5);
+      done();
+    });
+  });
+
+  it('can GET all ten of those products with a bearer token and published: "any"', function(done) {
+    return http('/api/v1/products', 'GET', { published: "any" }, {}, bearer, function(err, response) {
+      assert(!err);
+      assert(response);
+      assert(response.results);
+      assert(response.results.length === 10);
+      done();
+    });
+  });
+
+  var firstId;
+  
+  it('can GET only 5 if perPage is 5', function(done) {
+    http('/api/v1/products', 'GET', { perPage: 5, published: 'any' }, {}, bearer, function(err, response) {
+      assert(!err);
+      assert(response);
+      assert(response.results);
+      assert(response.results.length === 5);
+      firstId = response.results[0]._id;
+      assert(response.pages === 2);
+      done();
+    });
+  });
+
+  it('can GET a different 5 on page 2', function(done) {
+    http('/api/v1/products', 'GET', { perPage: 5, published: 'any', page: 2 }, {}, bearer, function(err, response) {
+      assert(!err);
+      assert(response);
+      assert(response.results);
+      assert(response.results.length === 5);
+      assert(response.results[0]._id !== firstId);
+      assert(response.pages === 2);
+      done();
+    });
+  });
+  
+  it('can log out to destroy a bearer token', function(done) {
+    http('/api/v1/logout', 'POST', {}, {}, bearer, function(err, result) {
+      assert(!err);
+      done();
+    });
+  });
+
+  it('cannot POST a product with a logged-out bearer token', function(done) {
+    http('/api/v1/products', 'POST', {}, {
+      title: 'Fake Product After Logout',
+      body: [
+        {
+          type: 'apostrophe-rich-text',
+          id: cuid(),
+          content: '<p>This is fake</p>'
+        }
+      ]
+    }, bearer, function(err, response) {
+      assert(err);
+      done();
+    });
+  });
+
+  it('should fail on a token that is too old', function() {
+    console.log('UNIMPLEMENTED');
+    assert(false);
+  });  
+   
+});
+
+function http(url, method, query, form, bearer, callback) {
+  var args = {
+    url: 'http://localhost:7900' + url,
+    qs: query || undefined,
+    form: ((method === 'POST') || (method === 'PUT')) ? form : undefined,
+    method: method,
+    json: true,
+    auth: bearer ? { bearer: bearer } : undefined
+  };
+  return request(args, function(err, response, body) {
+    if (err) {
+      return callback(err);
+    }
+    if (response.statusCode >= 400) {
+      return callback(response.statusCode);
+    }
+    return callback(null, body);
+  });
+}

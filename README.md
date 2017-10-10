@@ -45,7 +45,7 @@ If you want to fetch a second page of products:
 
 To avoid performance issues we do not send more than 50 products per API call. Your app should make additional queries as needed.
 
-You can use any [public cursor filter](http://apostrophecms.org/docs/tutorials/intermediate/cursors.html) via the query string.** It's [not hard to add custom filters](http://apostrophecms.org/docs/tutorials/intermediate/cursors.html#custom-filters).
+You can use any [cursor filter](http://apostrophecms.org/docs/tutorials/intermediate/cursors.html) via the query string.** It's [not hard to add custom filters](http://apostrophecms.org/docs/tutorials/intermediate/cursors.html#custom-filters). If you are accessing the API as a user who can edit this piece type, you can use all cursor filters intended for web use, otherwise only the public filters.
 
 ## Retrieving one product
 
@@ -63,7 +63,11 @@ These operations follow the usual REST patterns. But first, we need to talk abou
 
 ### Invoking APIs when logged out
 
-This is simple: you'll be able to `GET` public content, and that's all.
+This is simple: if the user is not logged in, they will be able to `GET` public, published content, and that's all.
+
+For many apps, **that's fine. You're using Apostrophe to create the content anyway.** Your content editors log into a site that's just for content creation, and your app users pull content from it with GET. Great. **You're done here.**
+
+But for those who need to create and manage content via REST too... read on!
 
 ### Invoking REST APIs as a logged-in user of your Apostrophe site
 
@@ -84,6 +88,8 @@ If your API request is sent via `fetch` or another alternative to jQuery, you'll
 By default, the POST, DELETE and UPDATE APIs are available only to logged-in users. This is quite useful if you want to provide some editing features in a React or similar app that is part of your Apostrophe site. But for a standalone app that uses Apostrophe as a headless backend, logging in via Apostrophe's interface might not be an option.
 
 For such cases, you can log in via REST and obtain a "bearer token" to be sent with requests.
+
+> Using bearer tokens only makes sense if you are using Apostrophe as your authentication system. If you are using `apostrophe-passport` to connect Apostrophe to google login, Twitter login, etc., you'll need to log users in via the Apostrophe site and deliver your app via a stripped-down Apostrophe "home page" on that site. See the notes above re: working smoothly with our CSRF protection in this configuration.
 
 1. Turn on support for bearer tokens:
 
@@ -118,7 +124,7 @@ With `username` and `password` properties in the body.
 
 3. On success, you will receive a JSON object with a single property: `bearer`.
 
-4. For all of the REST API calls that follow, pass that value as the `Authorization` header:
+4. For all of the REST API calls that follow, pass that value as the `Authorization` header, preceded by `Bearer` and a space:
 
 `Bearer nnnn`
 
