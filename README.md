@@ -53,7 +53,7 @@ If you want to fetch a second page of products:
 
 To avoid performance issues we do not send more than 50 products per API call. Your app should make additional queries as needed.
 
-You can use any [cursor filter](http://apostrophecms.org/docs/tutorials/intermediate/cursors.html) via the query string.** It's [not hard to add custom filters](http://apostrophecms.org/docs/tutorials/intermediate/cursors.html#custom-filters). If you are accessing the API as a user who can edit this piece type, you can use all cursor filters intended for web use, otherwise only the public filters.
+You can use any [cursor filter](http://apostrophecms.org/docs/tutorials/intermediate/cursors.html) via the query string. It's [not hard to add custom filters](http://apostrophecms.org/docs/tutorials/intermediate/cursors.html#custom-filters). If you are accessing the API as a user who can edit this piece type, you can use all cursor filters intended for web use, otherwise only the public filters.
 
 ## Retrieving one product
 
