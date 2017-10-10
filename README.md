@@ -283,7 +283,7 @@ On success, you will receive a JSON object containing properties similar to thes
 
 > The `content-type` of the response will be `text/plain`, for backwards compatibility with certain browsers, but it will contain valid JSON.
 
-You can now send the contents of the `file` property as the value of any `attachment` field when communicating with the REST API.
+**You can now send this object as the value of any `attachment` schema field when communicating with the REST API.**
 
 ### Using attachments directly
 
@@ -301,7 +301,7 @@ addFields: [
 ]
 ```
 
-Then you can simply pass the `file` object you received from the attachments API as the `snapshot` property when POSTing a product. And in your template code, you might write `apos.attachments.url(product.snapshot, { size: 'one-half' })` to obtain a URL to it.
+Then you can simply pass the `file` object you received from the attachments API as the `snapshot` property when POSTing a product. Later, when you `GET` this product from the API, you'll note that the attachment has a `._urls` property with versions of various sizes for your use.
 
 Just as often though, you'll want to introduce an image to the shared photo library and reference it via an images widget. Here's how to do that.
 
