@@ -1,6 +1,7 @@
 ## Apostrophe as a headless CMS
 
 <img src="https://raw.github.com/punkave/apostrophe-headless/master/jack-o-lantern-head.jpg" align="right" />
+
 [Apostrophe](http://apostrophecms.org) is great for building websites, but many projects these days just need a "headless" CMS: an easy way to create new content types by defining schemas and immediately have a friendly interface for managing them on the back end... and REST APIs on the front end for React, React Native and other frontend frameworks to talk to.
 
 Just as often, projects call for a mix of the two: Apostrophe as a CMS for the pages of the site, with React-style apps "mixed in" on certain pages.
