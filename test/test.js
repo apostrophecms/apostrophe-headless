@@ -3,7 +3,7 @@ var request = require('request');
 var cuid = require('cuid');
 var _ = require('lodash');
 var async = require('async');
-var fs = require('fs');
+var fs = require('fs-extra');
 
 describe('test apostrophe-headless', function() {
 
@@ -13,8 +13,14 @@ describe('test apostrophe-headless', function() {
 
   this.timeout(5000);
 
-  after(function() {
-    apos.db.dropDatabase();
+  after(function(done) {
+    apos.db.dropDatabase(function(err) {
+      if (err) {
+        console.error(err);
+      }
+      fs.removeSync(__dirname + '/public/uploads/attachments');
+      done();
+    });
   });
 
   it('initializes', function(done) {

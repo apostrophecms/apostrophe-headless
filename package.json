@@ -30,6 +30,7 @@
   },
   "devDependencies": {
     "apostrophe": "^2.0.0",
+    "fs-extra": "^4.0.2",
     "mocha": "^3.5.3",
     "request": "^2.83.0"
   }
