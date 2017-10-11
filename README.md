@@ -1,5 +1,6 @@
 ## Apostrophe as a headless CMS
 
+<img src="https://raw.github.com/punkave/apostrophe-headless/master/jack-o-lantern-head.jpg" align="right" />
 [Apostrophe](http://apostrophecms.org) is great for building websites, but many projects these days just need a "headless" CMS: an easy way to create new content types by defining schemas and immediately have a friendly interface for managing them on the back end... and REST APIs on the front end for React, React Native and other frontend frameworks to talk to.
 
 Just as often, projects call for a mix of the two: Apostrophe as a CMS for the pages of the site, with React-style apps "mixed in" on certain pages.
@@ -53,7 +54,7 @@ If you want to fetch a second page of products:
 
 To avoid performance issues we do not send more than 50 products per API call. Your app should make additional queries as needed.
 
-You can use any [cursor filter](http://apostrophecms.org/docs/tutorials/intermediate/cursors.html) via the query string. It's [not hard to add custom filters](http://apostrophecms.org/docs/tutorials/intermediate/cursors.html#custom-filters). If you are accessing the API as a user who can edit this piece type, you can use all cursor filters intended for web use, otherwise only the public filters.
+You can use any [cursor filter](http://apostrophecms.org/docs/tutorials/intermediate/cursors.html) that has a `sanitize` method via the query string. It's [not hard to add custom filters](http://apostrophecms.org/docs/tutorials/intermediate/cursors.html#custom-filters). If you are accessing the API as a user who can edit this piece type, you can use all cursor filters intended for web use, otherwise only the filters marked `safeFor: 'public'`.
 
 ## Retrieving one product
 
@@ -63,7 +64,7 @@ You can also retrieve one product via its `_id` property:
 
 The response is a single JSON object containing the product.
 
-**This will retrieve publicly available products, just like an Apostrophe pieces page would.** If a user is logged into Apostrophe they may be able to see additional products according to their privileges.
+Even though you are fetching just one product, you can still invoke filters via the query string. If you are carrying out this request with the privileges of an admin user, you might want to add `?published=any` to gain access to an unpublished product.
 
 ## Inserting, updating and deleting products
 
