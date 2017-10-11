@@ -3,6 +3,7 @@ var request = require('request');
 var cuid = require('cuid');
 var _ = require('lodash');
 var async = require('async');
+var fs = require('fs');
 
 describe('test apostrophe-headless', function() {
 
@@ -56,6 +57,11 @@ describe('test apostrophe-headless', function() {
                   value: 'blue'
                 }
               ]
+            },
+            {
+              name: 'photo',
+              type: 'attachment',
+              group: 'images'
             }
           ]
         },
@@ -126,13 +132,16 @@ describe('test apostrophe-headless', function() {
   it('cannot POST a product without a bearer token', function(done) {
     http('/api/v1/products', 'POST', {}, {
       title: 'Fake Product',
-      body: [
-        {
-          type: 'apostrophe-rich-text',
-          id: cuid(),
-          content: '<p>This is fake</p>'
-        }
-      ]
+      body: {
+        type: 'area',
+        items: [
+          {
+            type: 'apostrophe-rich-text',
+            id: cuid(),
+            content: '<p>This is fake</p>'
+          }
+        ]
+      }
     }, undefined, function(err, response) {
       assert(err);
       done();
@@ -273,6 +282,64 @@ describe('test apostrophe-headless', function() {
       done();
     });
   });
+  
+  var attachment;
+  var productWithPhoto;
+  
+  it('can post an attachment', function(done) {
+    return request({
+      url: 'http://localhost:7900/api/v1/attachments',
+      method: 'POST',
+      formData: {
+        file: fs.createReadStream(__dirname + '/test-image.jpg')
+      },
+      json: true,
+      auth: { bearer: bearer }    
+    }, function(err, response, body) {
+      assert(!err);
+      assert(response.statusCode < 400);
+      assert(typeof(body) === 'object');
+      assert(body._id);
+      attachment = body;
+      done();
+    });
+  });
+  
+  it('can upload a product containing an attachment', function(done) {
+    http('/api/v1/products', 'POST', {}, {
+      title: 'Product With Photo',
+      body: {
+        type: 'area',
+        items: [
+          {
+            type: 'apostrophe-rich-text',
+            id: cuid(),
+            content: '<p>Has a Photo</p>'
+          }
+        ]
+      },
+      photo: attachment
+    }, bearer, function(err, response) {
+      assert(!err);
+      assert(response);
+      productWithPhoto = response;
+      done();
+    });
+  });
+
+  it('can GET a product containing an attachment and it has image URLs', function(done) {
+    http('/api/v1/products/' + productWithPhoto._id, 'GET', {}, undefined, undefined, function(err, response) {
+      assert(!err);
+      assert(response);
+      assert(response._id === productWithPhoto._id);
+      assert(response.photo);
+      assert(response.photo._id === attachment._id);
+      assert(response.photo._urls);
+      assert(response.photo._urls.original);
+      assert(response.photo._urls.full);
+      done();
+    });
+  });
 
   it('can log out to destroy a bearer token', function(done) {
     http('/api/v1/logout', 'POST', {}, {}, bearer, function(err, result) {
@@ -284,13 +351,16 @@ describe('test apostrophe-headless', function() {
   it('cannot POST a product with a logged-out bearer token', function(done) {
     http('/api/v1/products', 'POST', {}, {
       title: 'Fake Product After Logout',
-      body: [
-        {
-          type: 'apostrophe-rich-text',
-          id: cuid(),
-          content: '<p>This is fake</p>'
-        }
-      ]
+      body: {
+        type: 'area',
+        items: [
+          {
+            type: 'apostrophe-rich-text',
+            id: cuid(),
+            content: '<p>This is fake</p>'
+          }
+        ]
+      }
     }, bearer, function(err, response) {
       assert(err);
       done();

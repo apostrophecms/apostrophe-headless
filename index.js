@@ -36,6 +36,7 @@ module.exports = {
     };
     
     self.addRoutes = function() {
+
       if (self.options.bearerTokens) {
         self.apos.app.use(self.bearerMiddleware);
         self.apos.app.post(baseEndpoint + '/login', function(req, res) {
@@ -92,6 +93,30 @@ module.exports = {
           });
         });
       }
+
+      self.apos.app.post(baseEndpoint + '/attachments', self.apos.attachments.middleware.canUpload, self.apos.middleware.files, function(req, res) {
+        var userAgent = req.headers['user-agent'];
+        var matches = userAgent && userAgent.match(/MSIE (\d+)/);
+        if (matches && (matches[1] <= 9)) {
+          // Must use text/plain for file upload responses in IE <= 9,
+          // don't do that to other browsers
+          res.header("Content-Type", "text/plain");
+        }
+        // The name attribute could be anything because of how fileupload
+        // controls work; we don't really care.
+        var file = _.values(req.files || {})[0];
+        if (!file) {
+          return res.status(400).send({ error: 'no file sent, did you forget to use multipart/form-data encoding?' });
+        }
+        return self.apos.attachments.accept(req, file, function(err, file) {
+          if (err) {
+            console.error(err);
+            return res.status(500).send({ status: 'error' });
+          }
+          return res.send(file);
+        });
+      });
+
     };
     
     // Instantiate the express-bearer-token middleware for use
