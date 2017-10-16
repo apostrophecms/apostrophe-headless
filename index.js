@@ -47,7 +47,7 @@ module.exports = {
             insertToken
           ], function(err) {
             if (err) {
-              return res.status((typeof(err) !== 'object') ? err : 500).send('error');
+              return res.status((typeof(err) !== 'object') ? err : 500).send({ 'error': 'error' });
             } else {
               return res.send({ bearer: bearer });
             }
@@ -80,14 +80,14 @@ module.exports = {
         });
         self.apos.app.post(baseEndpoint + '/logout', function(req, res) {
           if (!req.user) {
-            return res.status(403).send('forbidden');
+            return res.status(403).send({ forbidden: 'forbidden' });
           }
           return self.bearerTokensCollection.remove({
             userId: req.user._id,
             _id: req.token
           }, function(err) {
             if (err) {
-              return res.status(500).send('error');
+              return res.status(500).send({ error: 'error' });
             }
             return res.send({});
           });
@@ -156,9 +156,10 @@ module.exports = {
         ], function(err) {
           if (err) {
             console.error(err);
-            return res.status(500).send('error');
+            return res.status(500).send({ 'error': 'error' });
           }
           if (!user) {
+            return res.status(401).send({ 'error': 'bearer token invalid' });
             return self.apos.modules['apostrophe-express'].csrfWithoutExceptions(req, res, next);
           }
           req.user = user;

@@ -201,8 +201,18 @@ describe('test apostrophe-headless', function() {
     });
   }); 
 
+  it('Request with an invalid bearer token is a 401, even if it would otherwise be publicly accessible', function(done) {
+    return http('/api/v1/products', 'GET', {}, {}, 'madeupbearertoken', function(err, response) {
+      assert(err);
+      assert(err.status === 401);
+      assert(err.body.error);
+      assert(err.body.error === 'bearer token invalid');
+      done();
+    });
+  }); 
+
   it('can GET five of those products with a bearer token and no query parameters', function(done) {
-    return http('/api/v1/products', 'GET', {}, {}, undefined, function(err, response) {
+    return http('/api/v1/products', 'GET', {}, {}, bearer, function(err, response) {
       assert(!err);
       assert(response);
       assert(response.results);
@@ -389,7 +399,7 @@ function http(url, method, query, form, bearer, callback) {
       return callback(err);
     }
     if (response.statusCode >= 400) {
-      return callback(response.statusCode);
+      return callback({ status: response.statusCode, body: body });
     }
     return callback(null, body);
   });

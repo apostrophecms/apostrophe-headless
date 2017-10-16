@@ -55,7 +55,11 @@ If you want to fetch a second page of products:
 
 To avoid performance issues we do not send more than 50 products per API call. Your app should make additional queries as needed.
 
-You can use any [cursor filter](http://apostrophecms.org/docs/tutorials/intermediate/cursors.html) that has a `sanitize` method via the query string. It's [not hard to add custom filters](http://apostrophecms.org/docs/tutorials/intermediate/cursors.html#custom-filters). If you are accessing the API as a user who can edit this piece type, you can use all cursor filters intended for web use, otherwise only the filters marked `safeFor: 'public'`.
+You can use any [cursor filter](http://apostrophecms.org/docs/tutorials/intermediate/cursors.html) that has a `sanitize` method via the query string. It's [not hard to add custom filters](http://apostrophecms.org/docs/tutorials/intermediate/cursors.html#custom-filters).
+
+### Access as a logged-in user
+
+If you are accessing the API as a user who can edit this piece type, you can use all cursor filters intended for web use, otherwise only the filters marked `safeFor: 'public'`.
 
 ## Retrieving one product
 
@@ -155,6 +159,8 @@ There is **no need to pass the XSRF header** when using a valid bearer token bec
 With the appropriate `Bearer` heading as for any other request. That bearer token will be invalidated.
 
 > **Always secure sites that accept bearer tokens with HTTPS.** Of course, browsers are starting to deprecate sites that don't accept HTTPS anyway!
+>
+> **If you submit an invalid or outdated bearer token for any request**, you will receive a `401` HTTP status, and a JSON object with an `error` property set to `'bearer token invalid'`. This is your cue to ask the user to log in again and then retry the request.
 
 ## Inserting a product
 
@@ -353,4 +359,3 @@ You will receive a JSON object in response. Using the `_id` property, you can cr
 ```
 
 Set `yourImageId` to the `_id` of the object you received when you POSTed to `/api/v1/apostrophe-images`.
-
