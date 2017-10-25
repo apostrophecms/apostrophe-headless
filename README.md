@@ -101,7 +101,7 @@ If your API request is sent via `fetch` or another alternative to jQuery, you'll
 
 ### Logging in and obtaining a bearer token via REST
 
-By default, the `POST`, `DELETE`, `PUT` and `UPDATE` APIs are available to logged-in users of the site. This is quite useful if you want to provide some editing features in a React or similar app that is part of your Apostrophe site.
+By default, the `POST`, `DELETE` and `PUT` APIs are available to logged-in users of the site. This is quite useful if you want to provide some editing features in a React or similar app that is part of your Apostrophe site.
 
 But for a standalone app that uses Apostrophe as a headless backend, and isn't part of your Apostrophe site in any other way, logging in via Apostrophe's interface might not be an option.
 
@@ -174,7 +174,7 @@ On success you will receive a 200 status code and a JSON object containing the n
 
 ## Updating a product
 
-To update a product, make an UPDATE request. Send it to:
+To update a product, make a PUT request. Send it to:
 
 `/api/v1/products/cxxxxxxx`
 
@@ -309,9 +309,12 @@ addFields: [
 ]
 ```
 
-Then you can simply pass the `file` object you received from the attachments API as the `snapshot` property when POSTing a product. Later, when you `GET` this product from the API, you'll note that the attachment has a `._urls` property with versions of various sizes for your use.
+Then you can simply pass the `file` object you received from the attachments API as the `snapshot` property when POSTing a product.
 
-Just as often though, you'll want to introduce an image to the shared photo library and reference it via an images widget. Here's how to do that.
+> Later, when you `GET` this product from the API, you'll note that the attachment has a `._urls` property with versions of various sizes for your use. To make those URLs absolute, set the `baseUrl` option for your site in `app.js`. This is a top-level option, like `shortName`. It does not belong to a specific module. It should be set to the URL of your site, without any path part. In production, that might look like  `http://example.com` while in development, it might look like: `http://localhost:3000`
+
+### Working with the shared media library
+Sometimes, you'll want to introduce an image to the shared media library of Apostrophe and reference it via an images widget. Here's how to do that.
 
 ### Working with `apostrophe-images` and `apostrophe-files`
 
