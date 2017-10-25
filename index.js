@@ -2,6 +2,7 @@ var async = require('async');
 var _ = require('lodash');
 var cuid = require('cuid');
 var expressBearerToken = require('express-bearer-token');
+var cors = require('cors');
 
 module.exports = {
 
@@ -35,7 +36,13 @@ module.exports = {
       return self.bearerTokensCollection.ensureIndex({ expires: 1 }, { expireAfterSeconds: 0 }, callback);
     };
     
+    self.enableCorsHeaders = function() {
+      self.apos.app.use(baseEndpoint + '/login', cors());
+    };
+    
     self.addRoutes = function() {
+
+      self.enableCorsHeaders();
 
       if (self.options.bearerTokens) {
         self.apos.app.use(self.bearerMiddleware);
@@ -145,6 +152,7 @@ module.exports = {
         // Login is exempt, chicken and egg
         return next();
       }
+      
       self.bearerTokenMiddleware(req, res, function() {
         var userId, user;
         if (!req.token) {
