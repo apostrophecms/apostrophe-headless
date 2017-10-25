@@ -21,14 +21,13 @@ module.exports = {
   
   construct: function(self, options) {
 
-    var baseEndpoint = '/api/v' + (options.version || 1);
-    self.endpoint = baseEndpoint;
+    self.endpoint = '/api/v' + (options.version || 1);
         
     // Exclude the REST APIs from CSRF protection. However,
     // this module will call the CSRF protection middleware
     // itself if a user is not present based on a bearer token.
     self.addCsrfException = function(exceptions) {
-      exceptions.push(baseEndpoint + '/**');
+      exceptions.push(self.endpoint + '/**');
     };
 
     self.enableCollection = function(callback) {
@@ -37,7 +36,7 @@ module.exports = {
     };
     
     self.enableCorsHeaders = function() {
-      self.apos.app.use(baseEndpoint + '/login', cors());
+      self.apos.app.use(self.endpoint, cors());
     };
     
     self.addRoutes = function() {
@@ -46,7 +45,7 @@ module.exports = {
 
       if (self.options.bearerTokens) {
         self.apos.app.use(self.bearerMiddleware);
-        self.apos.app.post(baseEndpoint + '/login', function(req, res) {
+        self.apos.app.post(self.endpoint + '/login', function(req, res) {
           var bearer;
           var user;
           return async.series([
@@ -85,7 +84,7 @@ module.exports = {
             }, callback);
           }
         });
-        self.apos.app.post(baseEndpoint + '/logout', function(req, res) {
+        self.apos.app.post(self.endpoint + '/logout', function(req, res) {
           if (!req.user) {
             return res.status(403).send({ forbidden: 'forbidden' });
           }
@@ -101,7 +100,7 @@ module.exports = {
         });
       }
 
-      self.apos.app.post(baseEndpoint + '/attachments', self.apos.attachments.middleware.canUpload, self.apos.middleware.files, function(req, res) {
+      self.apos.app.post(self.endpoint + '/attachments', self.apos.attachments.middleware.canUpload, self.apos.middleware.files, function(req, res) {
         var userAgent = req.headers['user-agent'];
         var matches = userAgent && userAgent.match(/MSIE (\d+)/);
         if (matches && (matches[1] <= 9)) {
