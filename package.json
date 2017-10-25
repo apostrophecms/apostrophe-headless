@@ -1,6 +1,6 @@
 {
   "name": "apostrophe-headless",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Use Apostrophe as a headless CMS with REST APIs for your apps",
   "main": "index.js",
   "scripts": {
