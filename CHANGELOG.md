@@ -1,3 +1,7 @@
+## 2.0.3
+
+`apostrophe-headless` no longer has to be configured before modules it adds APIs to, and it is possible to add APIs to `apostrophe-images` or `apostrophe-files` if desired. Thanks to Stephen Walsh for pointing out the issue.
+
 ## 2.0.2
 
 Documentation improvements. No code changes.

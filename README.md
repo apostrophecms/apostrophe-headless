@@ -24,9 +24,6 @@ npm install apostrophe-headless
 // in app.js
 modules: {
 
-  // Load this module; it improves pieces, so
-  // now we can optionally turn on the api
-  // for each pieces module
   'apostrophe-headless': {},
 
   'products': {

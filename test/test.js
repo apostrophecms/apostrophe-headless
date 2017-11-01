@@ -71,6 +71,9 @@ describe('test apostrophe-headless', function() {
             }
           ]
         },
+        'apostrophe-images': {
+          restApi: true
+        },
         'apostrophe-users': {
           groups: [
             {
