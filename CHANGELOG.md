@@ -1,3 +1,7 @@
+## 2.0.4
+
+Documentation changes only. Gave some simple examples of query parameters that can be used to filter the results.
+
 ## 2.0.3
 
 `apostrophe-headless` no longer has to be configured before modules it adds APIs to, and it is possible to add APIs to `apostrophe-images` or `apostrophe-files` if desired. Thanks to Stephen Walsh for pointing out the issue.
