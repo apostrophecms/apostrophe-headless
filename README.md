@@ -52,7 +52,15 @@ If you want to fetch a second page of products:
 
 To avoid performance issues we do not send more than 50 products per API call. Your app should make additional queries as needed.
 
-You can use any [cursor filter](http://apostrophecms.org/docs/tutorials/intermediate/cursors.html) that has a `sanitize` method via the query string. It's [not hard to add custom filters](http://apostrophecms.org/docs/tutorials/intermediate/cursors.html#custom-filters).
+### Filtering products
+
+Here are some examples:
+
+`/api/v1/products?search=cheese`
+
+`/api/v1/products?autocomplete=che`
+
+There's much more. You can use any [cursor filter](http://apostrophecms.org/docs/tutorials/intermediate/cursors.html) that offers a `sanitize` method via the query string. It's [not hard to add custom filters](http://apostrophecms.org/docs/tutorials/intermediate/cursors.html#custom-filters) if you need to, but keep in mind that most schema field types have built-in [filter support](http://apostrophecms.org/docs/tutorials/intermediate/cursors.html).
 
 ### Access as a logged-in user
 
