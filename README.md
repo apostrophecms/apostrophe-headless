@@ -80,7 +80,7 @@ Even though you are fetching just one product, you can still invoke filters via 
 
 These operations follow the usual REST patterns. But first, we need to talk about permissions.
 
-### Invoking APIs when logged out
+## Invoking APIs when logged out
 
 This is simple: if the user is not logged in, they will be able to `GET` public, published content, and that's all.
 
@@ -90,13 +90,13 @@ Your content editors log into a site that's just for content creation, and your 
 
 But for those who need to create and manage content via REST too... read on!
 
-### Invoking REST APIs as a logged-in user of your Apostrophe site
+## Invoking REST APIs as a logged-in user of your Apostrophe site
 
 If you're building a React app or similar that is part of a webpage delivered by your Apostrophe site, and the right user is already logged into the site, then the APIs will automatically "see" the user and run with the right permissions. However, see the note that follows re: CSRF protection.
  
-> If this doesn't sound relevant to your project, skip ahead to learn how to use bearer tokens instead. We've got your back, headless horseman.
+> If this doesn't sound relevant to your project, skip ahead to learn how to use API keys and bearer tokens instead. We've got your back, headless horseman.
 
-### CSRF protection and logged-in users
+## CSRF protection and logged-in users
 
 **If an API request comes from an Apostrophe user who logged in conventionally via the website,** and not via the REST login APIs below, then Apostrophe will check for CSRF (Cross-Site Request Forgery) attacks. 
 
@@ -104,15 +104,86 @@ If your API request is being sent by jQuery as provided by Apostrophe, you're go
 
 If your API request is sent via `fetch` or another alternative to jQuery, you'll need to set the `X-XSRF-TOKEN` HTTP header to the current value of `window.apos.csrfCookieName`. This ensures the request didn't come from a sneaky form on a third-party website.
 
-### Logging in and obtaining a bearer token via REST
+## Building apps without Apostrophe UI: bearer tokens and API keys
 
 By default, the `POST`, `DELETE` and `PUT` APIs are available to logged-in users of the site. This is quite useful if you want to provide some editing features in a React or similar app that is part of your Apostrophe site.
 
 But for a standalone app that uses Apostrophe as a headless backend, and isn't part of your Apostrophe site in any other way, logging in via Apostrophe's interface might not be an option.
 
-For such cases, you can log in via REST and obtain a "bearer token" to be sent with requests.
+For such cases, you can log in via REST and obtain a "bearer token" to be sent with requests. Or, you can use a hardcoded API key with total admin access. We'll look at API keys first, to help you get started. Then we'll look at bearer tokens.
 
-> Using bearer tokens only makes sense if you are using Apostrophe as your authentication system. If you are using `apostrophe-passport` to connect Apostrophe to google login, Twitter login, etc., you'll need to log users in via the Apostrophe site and deliver your app via a stripped-down Apostrophe "home page" on that site. See the notes above re: working smoothly with our CSRF protection in this configuration.
+### Working with API keys
+
+It's easy to configure API keys to have **full admin access to all content** for which the REST API has been activated:
+
+```javascript
+// in app.js
+modules: {
+  'apostrophe-headless': {
+    apiKeys: [ 'example-i-sure-hope-you-changed-this' ]
+  },
+  products: {
+    extend: 'apostrophe-pieces',
+    name: 'product',
+    restApi: true
+  },
+  locations: {
+    extend: 'apostrophe-pieces',
+    name: 'location',
+    restApi: true
+  }
+}
+```
+
+You can also configure api keys for a single module:
+
+```javascript
+// in app.js
+modules: {
+  'apostrophe-headless': {},
+  products: {
+    extend: 'apostrophe-pieces',
+    name: 'product',
+    restApi: true,
+    apiKeys: [ 'i-only-grant-access-to-this-one-module' ]
+  },
+  locations: {
+    extend: 'apostrophe-pieces',
+    name: 'location',
+    restApi: true
+  }
+}
+```
+
+Now you can pass the API key in either of two ways when [inserting a product](#inserting-a-product) or making a similar request:
+
+1. Just add an `apikey` property to the query string. **This goes in the query string regardless of the request method.**
+
+Example:
+
+`POST /api/v1/products?apikey=example-api-key`
+
+The body of the POST may be a JSON body or use the traditional url encoding, as described below; the important thing is that the apikey is separate, in the query string, as shown here.
+
+2. Pass an `Authorization` header as part of your HTTP request:
+
+`Authorization: ApiKey your-api-key-goes-here`
+
+> **Always secure sites that accept API keys with HTTPS.** You should never send an API key over "plain HTTP." Of course, browsers are starting to deprecate sites that don't accept HTTPS anyway!
+
+#### When NOT to use API keys
+
+API keys are useful for hardcoded situations where **there is no way an untrusted user could ever see them.** For instance, it's fine to use an API key for back-end communication between two servers.
+
+However, you should **never use api keys in the code of a mobile app, browser-based web app, JavaScript in the browser of any kind** or other situation where code might be viewed as source, decompiled, etc. In these situations, you must use bearer tokens, which are specific to a user.
+
+### Using bearer tokens
+
+Bearer tokens are a way to let users log in even though they never see an Apostrophe-powered website. They allow you to implement your own login mechanism in your mobile app.
+
+> Using bearer tokens only makes sense if you are using Apostrophe as your authentication system. If you are using `apostrophe-passport` to connect Apostrophe to google login, Twitter login, etc., you'll need to log users in via the Apostrophe site and then deliver your app via a stripped-down Apostrophe "home page" on that site. See the notes above re: working smoothly with our CSRF protection in this configuration.
+
+#### How to log users in with bearer tokens
 
 1. Turn on support for bearer tokens:
 
@@ -388,13 +459,13 @@ modules: {
 }
 ```
 
-## Retrieving the home page
+## Retrieving the home page and its children
 
 Now your app can access:
 
-`/api/v1/pages/home`
+`/api/v1/pages`
 
-To get information about the home page. It is returned as a single JSON object with `slug`, `path`, `title`, `type` and other properties similar to the way pieces are returned (see the "products" examples above).
+To get information about the home page and its children. The response isa single JSON object with `slug`, `path`, `title`, `type`, `_url` and other properties describing the home page, similar to the way pieces are returned (see the "products" examples above). In addition, information about children of the home page is returned.
 
 ### Accessing child pages
 
@@ -412,9 +483,29 @@ A page returned in this way may in turn offer its own `_children` property.
 
 Pages other than the home page will also have an `_ancestors` array. This functions similarly to the `_children` array.
 
-### Inserting a page
+### Obtaining the entire page tree with a single request
 
-**All write operations to pages are governed by permissions. See ["invoking APIs when logged out,"](#invoking-apis-when-logged-out) above.
+It is possible to obtain summary information about the entire page tree with a single request. Since the unrestricted use of this feature could have a performance impact, **This feature requires a bearer token or API key.**
+
+> If a bearer token is used, the returned tree will not contain pages to which the user does not have edit access, except for ancestors of pages to which the user *does* have edit access, which is necessary to accurately present the tree.
+
+To fetch the entire tree, add `all=1` to your query:
+
+`/api/v1/pages?all=1`
+
+### Nested tree response
+
+The response will be a single object representing the home page, with at least `title`, `slug`, `tags`, `_url` and `_id` properties, and a `_children` array. For speed, the response will not be as detailed as in a regular request to `/api/v1/pages`.
+
+The pages in the `_children` array, in turn, will feature their own `_children` arrays where needed, with a similarly limited level of detail.
+
+### Flat response
+
+It is possible to obtain a flat version of this data by adding `?flat=1` to the URL. In this case, a flat JSON array is returned. The array is sorted by depth, then by rank. Pages may still have a `_children` array, however it will only contain the `_id`s of the child pages, not the pages themselves. In this way you can still reconstruct the tree if you wish.
+
+## Inserting a page
+
+**All write operations to pages are governed by permissions.** See ["invoking APIs when logged out,"](#invoking-apis-when-logged-out) above. You will need to use an API key or bearer token.
 
 It is possible to insert a page via the API:
 
