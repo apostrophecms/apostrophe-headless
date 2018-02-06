@@ -33,12 +33,14 @@ describe('test apostrophe-headless', function() {
           port: 7900
         },
         'apostrophe-headless': {
-          bearerTokens: true
+          bearerTokens: true,
+          apiKeys: [ 'skeleton-key' ]
         },
         'products': {
           extend: 'apostrophe-pieces',
           restApi: true,
           name: 'product',
+          apiKeys: ['product-key' ],
           addFields: [
             {
               name: 'body',
@@ -301,11 +303,91 @@ describe('test apostrophe-headless', function() {
       done();
     });
   });
-  
+
+  it('can insert a product with the skeleton api key, via query string', function(done) {
+    http('/api/v1/products', 'POST', { apiKey: 'skeleton-key' }, {
+      title: 'Skeleton Key Product',
+      body: {
+        type: 'area',
+        items: [
+          {
+            type: 'apostrophe-rich-text',
+            id: cuid(),
+            content: '<p>This is the skeleton key product</p>'
+          }
+        ]
+      }
+    }, undefined, function(err, response) {
+      assert(!err);
+      done();
+    });
+  });
+
+  it('can insert a product with the products-only api key, via query string', function(done) {
+    http('/api/v1/products', 'POST', { apiKey: 'product-key' }, {
+      title: 'Product Key Product',
+      body: {
+        type: 'area',
+        items: [
+          {
+            type: 'apostrophe-rich-text',
+            id: cuid(),
+            content: '<p>This is the product key product</p>'
+          }
+        ]
+      }
+    }, undefined, function(err, response) {
+      assert(!err);
+      done();
+    });
+  });
+
+  it('can insert a product with the skeleton api key, via auth header', function(done) {
+    http('/api/v1/products', 'POST', { apiKey: 'product-key' }, {
+      title: 'Product Key Product',
+      body: {
+        type: 'area',
+        items: [
+          {
+            type: 'apostrophe-rich-text',
+            id: cuid(),
+            content: '<p>This is the product key product</p>'
+          }
+        ]
+      }
+    }, undefined, { 
+      headers: {
+        'Authorization': 'Api-Key skeleton-key'
+      }
+    }, function(err, response) {
+      assert(!err);
+      done();
+    });
+  });
+
+  it('cannot insert a product with a bad api key, via query string', function(done) {
+    http('/api/v1/products', 'POST', { apiKey: 'woo-woo' }, {
+      title: 'Bogus Product',
+      body: {
+        type: 'area',
+        items: [
+          {
+            type: 'apostrophe-rich-text',
+            id: cuid(),
+            content: '<p>This is the bogus product</p>'
+          }
+        ]
+      }
+    }, undefined, function(err, response) {
+      assert(err);
+      done();
+    });
+  });
+
   var attachment;
   var productWithPhoto;
   
-  it('can post an attachment', function(done) {
+  it('can post an attachment with a bearer token', function(done) {
     return request({
       url: 'http://localhost:7900/api/v1/attachments',
       method: 'POST',
@@ -323,7 +405,76 @@ describe('test apostrophe-headless', function() {
       done();
     });
   });
-  
+
+  it('can post an attachment with the skeleton API key (query string)', function(done) {
+    return request({
+      url: 'http://localhost:7900/api/v1/attachments?apikey=skeleton-key',
+      method: 'POST',
+      formData: {
+        file: fs.createReadStream(__dirname + '/test-image.jpg')
+      },
+      json: true
+    }, function(err, response, body) {
+      assert(!err);
+      assert(response.statusCode < 400);
+      assert(typeof(body) === 'object');
+      assert(body._id);
+      done();
+    });
+  });
+
+  it('can post an attachment with the product API key (query string)', function(done) {
+    return request({
+      url: 'http://localhost:7900/api/v1/attachments?apikey=product-key',
+      method: 'POST',
+      formData: {
+        file: fs.createReadStream(__dirname + '/test-image.jpg')
+      },
+      json: true
+    }, function(err, response, body) {
+      assert(!err);
+      assert(response.statusCode < 400);
+      assert(typeof(body) === 'object');
+      assert(body._id);
+      done();
+    });
+  });
+
+  it('can post an attachment with the skeleton API key (via auth header)', function(done) {
+    return request({
+      url: 'http://localhost:7900/api/v1/attachments',
+      method: 'POST',
+      formData: {
+        file: fs.createReadStream(__dirname + '/test-image.jpg')
+      },
+      json: true,
+      headers: {
+        'Authorization': 'ApiKey skeleton-key'
+      }
+    }, function(err, response, body) {
+      assert(!err);
+      assert(response.statusCode < 400);
+      assert(typeof(body) === 'object');
+      assert(body._id);
+      done();
+    });
+  });
+
+  it('cannot post an attachment without any api key', function(done) {
+    return request({
+      url: 'http://localhost:7900/api/v1/attachments',
+      method: 'POST',
+      formData: {
+        file: fs.createReadStream(__dirname + '/test-image.jpg')
+      },
+      json: true
+    }, function(err, response, body) {
+      assert(!err);
+      assert(response.statusCode >= 400);
+      done();
+    });
+  });
+
   it('can upload a product containing an attachment', function(done) {
     http('/api/v1/products', 'POST', {}, {
       title: 'Product With Photo',
@@ -388,7 +539,11 @@ describe('test apostrophe-headless', function() {
    
 });
 
-function http(url, method, query, form, bearer, callback) {
+function http(url, method, query, form, bearer, extra, callback) {
+  if (arguments.length === 6) {
+    callback = extra;
+    extra = null;
+  }
   var args = {
     url: 'http://localhost:7900' + url,
     qs: query || undefined,
@@ -397,6 +552,9 @@ function http(url, method, query, form, bearer, callback) {
     json: true,
     auth: bearer ? { bearer: bearer } : undefined
   };
+  if (extra) {
+    _.assign(args, extra);
+  }
   return request(args, function(err, response, body) {
     if (err) {
       return callback(err);

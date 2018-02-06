@@ -142,7 +142,11 @@ You can also configure api keys for a single module:
 ```javascript
 // in app.js
 modules: {
-  'apostrophe-headless': {},
+  'apostrophe-headless': {
+    // This option MUST EXIST to allow api keys at all. If you
+    // do not want any global api keys, leave it empty
+    apiKeys: []
+  },
   products: {
     extend: 'apostrophe-pieces',
     name: 'product',
@@ -156,6 +160,8 @@ modules: {
   }
 }
 ```
+
+> Either way, the api key is allowed to create attachments (see [Images, files and attachments in REST](#images-files-and-attachments-in-rest)).
 
 Now you can pass the API key in either of two ways when [inserting a product](#inserting-a-product) or making a similar request:
 
@@ -467,7 +473,7 @@ Now your app can access:
 
 `/api/v1/pages`
 
-To get information about the home page and its children. The response isa single JSON object with `slug`, `path`, `title`, `type`, `_url` and other properties describing the home page, similar to the way pieces are returned (see the "products" examples above). In addition, information about children of the home page is returned.
+To get information about the home page and its children. The response is a single JSON object with `slug`, `path`, `title`, `type`, `_url` and other properties describing the home page, similar to the way pieces are returned (see the "products" examples above). In addition, information about children of the home page is returned.
 
 ### Accessing child pages
 
@@ -479,19 +485,20 @@ Armed with the `_id`, you can obtain detailed information about a page by making
 
 `/api/v1/pages/ID_GOES_HERE`
 
-A page returned in this way may in turn offer its own `_children` property.
+A page returned in this way will in turn offer its own `_children` property.
 
 This response will include schema fields, areas, etc. in the same detail as it would when requesting a piece.
 
-*The `_children` property does not necessarily exist if there are no child pages.*
+*The `_children` property always exists. It may be empty.*
+
 
 ### Accessing ancestor pages
 
-Pages other than the home page will also have an `_ancestors` array. This functions similarly to the `_children` array.
+Pages also have an `_ancestors` array. This functions similarly to the `_children` array. The first entry is the home page, and the last entry is the immediate parent of the page in question.
 
 ### Obtaining the entire page tree with a single request
 
-It is possible to obtain summary information about the entire page tree with a single request. Since the unrestricted use of this feature could have a performance impact, **This feature requires a bearer token or API key.**
+It is possible to obtain summary information about the entire page tree with a single request. Since the unrestricted use of this feature could have a performance impact, **This feature requires a bearer token or API key**.
 
 > If a bearer token is used, the returned tree will not contain pages to which the user does not have edit access, except for ancestors of pages to which the user *does* have edit access, which is necessary to accurately present the tree.
 
@@ -553,7 +560,7 @@ The response will be an appropriate HTTP status code.
 
 To move a page in the page tree, make a POST request to the following URL:
 
-/api/v1/pages/move
+`/api/v1/pages/move`
 
 Your POST body must contain the following fields:
 
