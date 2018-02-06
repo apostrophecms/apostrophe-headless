@@ -173,7 +173,9 @@ You can insert a product via a POST request. You should POST to:
 
 `/api/v1/products`
 
-The body of your POST should contain all of the schema fields you wish to set. You may use either traditional URL-style encoding or a JSON body.
+The body of your POST should contain all of the schema fields you wish to set.
+
+You may use either traditional URL-style encoding or a JSON body. **However if you are working with Apostrophe areas you must use a JSON body** (see below).
 
 On success you will receive a 200 status code and a JSON object containing the new product.
 
@@ -186,6 +188,8 @@ To update a product, make a PUT request. Send it to:
 Where `cxxxxxxx` is the `_id` property of the existing product you wish to update.
 
 On success you will receive a 200 status code and the updated JSON object representing the product.
+
+You may use either traditional URL-style encoding or a JSON body. **However if you are working with Apostrophe areas you must use a JSON body** (see below).
 
 ## Deleting a product
 
@@ -319,6 +323,7 @@ Then you can simply pass the `file` object you received from the attachments API
 > Later, when you `GET` this product from the API, you'll note that the attachment has a `._urls` property with versions of various sizes for your use. To make those URLs absolute, set the `baseUrl` option for your site in `app.js`. This is a top-level option, like `shortName`. It does not belong to a specific module. It should be set to the URL of your site, without any path part. In production, that might look like  `http://example.com` while in development, it might look like: `http://localhost:3000`
 
 ### Working with the shared media library
+
 Sometimes, you'll want to introduce an image to the shared media library of Apostrophe and reference it via an images widget. Here's how to do that.
 
 ### Working with `apostrophe-images` and `apostrophe-files`
@@ -367,3 +372,98 @@ You will receive a JSON object in response. Using the `_id` property, you can cr
 ```
 
 Set `yourImageId` to the `_id` of the object you received when you POSTed to `/api/v1/apostrophe-images`.
+
+## Working with pages
+
+The examples above all concern pieces. Pieces are the most natural candidate for a REST API, but you can also use `apostrophe-headless` to work with pages:
+
+```javascript
+modules: {
+
+  'apostrophe-headless': {},
+
+  'apostrophe-pages': {
+    restApi: true
+  }
+}
+```
+
+## Retrieving the home page
+
+Now your app can access:
+
+`/api/v1/pages/home`
+
+To get information about the home page. It is returned as a single JSON object with `slug`, `path`, `title`, `type` and other properties similar to the way pieces are returned (see the "products" examples above).
+
+### Accessing child pages
+
+Basic information about the top-level children of the home page (aka the "tabs" of your site) is available in the `_children` property of the returned object. This property is an array. Each element has, at a minimum, `_id`, `title`, `type` and `slug` properties.
+
+Armed with the `_id`, you can obtain detailed information about a page by making a separate API request:
+
+`/api/v1/pages/ID_GOES_HERE`
+
+A page returned in this way may in turn offer its own `_children` property.
+
+*The `_children` property does not necessarily exist if there are no child pages.*
+
+### Accessing ancestor pages
+
+Pages other than the home page will also have an `_ancestors` array. This functions similarly to the `_children` array.
+
+### Inserting a page
+
+**All write operations to pages are governed by permissions. See ["invoking APIs when logged out,"](#invoking-apis-when-logged-out) above.
+
+It is possible to insert a page via the API:
+
+`/api/v1/pages`
+
+The body of your POST should contain all of the schema fields you wish to set, **and in addition it must contain a `_parentId` property** (note the underscore). The page will be added as the last child of the specified parent page.
+
+**The use of a JSON body, rather than traditional URL encoding, is strongly recommended and if you are working with areas it is mandatory.**
+
+On success you will receive a 200 status code and a JSON object containing the new page.
+
+## Updating a page
+
+To update a product, make a PUT request. Send it to:
+
+`/api/v1/pages/cxxxxxxx`
+
+Where `cxxxxxxx` is the `_id` property of the existing page you wish to update.
+
+On success you will receive a 200 status code and the updated JSON object representing the product.
+
+You may use either traditional URL-style encoding or a JSON body. **However if you are working with Apostrophe areas you must use a JSON body** (see below).
+
+**You may not move a page in the page tree via this method. The `path`, `level` and `rank` properties cannot be modified by this method.** To move a page in the page tree, see ["moving a page in the page tree,"](#moving-a-page-in-the-page-tree) below.
+
+## Deleting a product
+
+To delete a page, make a DELETE request. Send it to:
+
+`/api/v1/products/cxxxxxxx`
+
+Where `cxxxxxxx` is the `_id` property of the existing page you wish to delete.
+
+The response will be an appropriate HTTP status code.
+
+*For consistency with the rest of Apostrophe, a deleted page is moved to the trash.*
+
+## Moving a page in the page tree
+
+To move a page in the page tree, make a POST request to the following URL:
+
+/api/v1/pages/move
+
+Your POST body must contain the following fields:
+
+* `_id` must be the `_id` of the page to be moved.
+* `relatedId` must be the _id of another page.
+* `relationship` must be `before`, `after` or `inside`. The page referenced by `_id` is moved `before`, `after` or `inside` the page specified by `relatedId`. If `_inside` is specified, the page becomes the last child of `relatedId`.
+
+The home page may not be moved.
+
+
