@@ -471,11 +471,15 @@ To get information about the home page and its children. The response isa single
 
 Basic information about the top-level children of the home page (aka the "tabs" of your site) is available in the `_children` property of the returned object. This property is an array. Each element has, at a minimum, `_id`, `title`, `type` and `slug` properties.
 
+### Fetching detailed information about one page
+
 Armed with the `_id`, you can obtain detailed information about a page by making a separate API request:
 
 `/api/v1/pages/ID_GOES_HERE`
 
 A page returned in this way may in turn offer its own `_children` property.
+
+This response will include schema fields, areas, etc. in the same detail as it would when requesting a piece.
 
 *The `_children` property does not necessarily exist if there are no child pages.*
 
