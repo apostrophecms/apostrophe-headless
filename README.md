@@ -440,7 +440,7 @@ You may use either traditional URL-style encoding or a JSON body. **However if y
 
 **You may not move a page in the page tree via this method. The `path`, `level` and `rank` properties cannot be modified by this method.** To move a page in the page tree, see ["moving a page in the page tree,"](#moving-a-page-in-the-page-tree) below.
 
-## Deleting a product
+## Deleting a page
 
 To delete a page, make a DELETE request. Send it to:
 
