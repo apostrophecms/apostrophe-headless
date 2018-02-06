@@ -8,6 +8,8 @@ Just as often, projects call for a mix of the two: Apostrophe as a CMS for the p
 
 The `apostrophe-headless` module provides REST APIs for content types created with Apostrophe's [pieces](http://apostrophecms.org/docs/tutorials/getting-started/reusable-content-with-pieces.html) feature. With this module, you might choose to just click "Page Settings" and lock down the "home page" of your site to "logged in users only," then use Apostrophe as a pure headless CMS... or you might mix and match. It's up to you.
 
+> We'll start out by talking about pieces, because they map so well to REST concepts. But `apostrophe-headless` also supports working with pages. We recommend you read about pieces first to figure out the basics, especially authentication.
+
 ## Adding a REST API for products
 
 Let's assume you have a module called `products` that extends `apostrophe-pieces` as described in our [reusable content with pieces](http://apostrophecms.org/docs/tutorials/getting-started/reusable-content-with-pieces.html) tutorial. Now you want a REST API so your app can easily get information about pieces.
