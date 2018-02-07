@@ -83,6 +83,46 @@ describe('test apostrophe-headless', function() {
               permissions: [ 'admin' ]
             }
           ]
+        },
+        'apostrophe-pages': {
+          restApi: true,
+          apiKeys: [ 'page-key' ],
+          park: [
+            {
+              type: 'default',
+              title: 'Tab One',
+              slug: '/tab-one',
+              _children: [
+                {
+                  type: 'default',
+                  title: 'Tab One Child One',
+                  slug: '/tab-one/child-one'
+                },
+                {
+                  type: 'default',
+                  title: 'Tab One Child Two',
+                  slug: '/tab-one/child-two'
+                },
+              ]
+            },
+            {
+              type: 'default',
+              title: 'Tab Two',
+              slug: '/tab-two',
+              _children: [
+                {
+                  type: 'default',
+                  title: 'Tab Two Child One',
+                  slug: '/tab-two/child-one'
+                },
+                {
+                  type: 'default',
+                  title: 'Tab Two Child Two',
+                  slug: '/tab-two/child-two'
+                },
+              ]
+            },
+          ]
         }
       },
       afterInit: function(callback) {
@@ -536,7 +576,123 @@ describe('test apostrophe-headless', function() {
       done();
     });
   });
-   
+
+  var tabOneId;
+
+  it('can get the home page and its children', function(done) {
+    return http('/api/v1/pages', 'GET', {}, {}, undefined, function(err, response) {
+      assert(!err);
+      assert(response);
+      assert(response.slug === '/');
+      assert(response._children);
+      assert(response._children.length === 2);
+      assert(response._children[0].title === 'Tab One');
+      assert(response._children[1].title === 'Tab Two');
+      assert(!response._children[0]._children);
+      tabOneId = response._children[0]._id;
+      assert(tabOneId);
+      done();
+    });
+  });
+
+  it('can get an individual page by id, with its children', function(done) {
+    return http('/api/v1/pages/' + tabOneId, 'GET', {}, {}, undefined, function(err, response) {
+      assert(!err);
+      assert(response);
+      assert(response.slug === '/tab-one');
+      assert(response._children);
+      assert(response._children.length === 2);
+      assert(response._children[0].title === 'Tab One Child One');
+      assert(response._children[1].title === 'Tab One Child Two');
+      assert(!response._children[0]._children);
+      done();
+    });
+  });
+
+  it('cannot get the entire page tree without an api key', function(done) {
+    return http('/api/v1/pages', 'GET', { all: 1 }, {}, undefined, function(err, response) {
+      assert(err);
+    });
+  });
+
+  it('can get the entire page tree with an api key', function(done) {
+    return http('/api/v1/pages', 'GET', { all: 1 }, {}, undefined, function(err, response) {
+      assert(!err);
+      assert(response);
+      assert(response.slug === '/');
+      assert(response._children);
+      assert(response._children.length === 2);
+      assert(response._children[0].title === 'Tab One');
+      assert(response._children[1].title === 'Tab Two');
+      assert(response._children[0]._children);
+      assert(response._children[0]._children.length === 2);
+      done();
+    });
+  });
+
+  var newPage;
+
+  it('can insert a new grandchild page with the pages key', function(done) {
+    http('/api/v1/pages', 'POST', { apiKey: 'page-key' }, {
+      title: 'Tab One Child Three',
+      body: {
+        type: 'area',
+        items: [
+          {
+            type: 'apostrophe-rich-text',
+            id: cuid(),
+            content: '<p>This is tab one child three</p>'
+          }
+        ]
+      }
+    }, undefined, function(err, response) {
+      assert(!err);
+      assert(response.level === 2);
+      assert(response.path === '/tab-one/tab-one-child-three');
+      newPage = response;
+      done();
+    });
+  });
+
+  it('can update grandchild page with the pages key', function(done) {
+    newPage.title = 'Tab One Child Three Modified';
+    http('/api/v1/pages', 'PUT', { apiKey: 'page-key' }, newPage, undefined, function(err, response) {
+      assert(!err);
+      done();
+    });
+  });
+
+  it('can "delete" grandchild page', function(done) {
+    http('/api/v1/pages/' + newPage._id, 'DELETE', { apiKey: 'page-key' }, {}, undefined, function(err, response) {
+      assert(!err);
+      done();
+    });
+  });
+
+  it('can turn a child into a grandchild', function(done) {
+    http('/api/v1/pages/move/' + tabOneId, 'POST', { apiKey: 'page-key' }, {
+      relatedId: tabTwoId,
+      relationship: 'inside'
+    }, undefined, function(err, response) {
+      assert(!err);
+      done();
+    });
+  });
+
+  it('page tree reflects move of child to be grandchild', function(done) {
+    return http('/api/v1/pages', 'GET', { all: 1 }, {}, undefined, function(err, response) {
+      assert(!err);
+      assert(response);
+      assert(response.slug === '/');
+      assert(response._children);
+      assert(response._children.length === 1);
+      assert(response._children[0].title === 'Tab Two');
+      assert(response._children[0]._children && (response._children[0]._children.length === 3));
+      assert(response._children[0]._children[2].title === 'Tab One');
+      done();
+    });
+  });
+
 });
 
 function http(url, method, query, form, bearer, extra, callback) {
