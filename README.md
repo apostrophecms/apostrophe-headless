@@ -548,7 +548,7 @@ You may use either traditional URL-style encoding or a JSON body. **However if y
 
 To delete a page, make a DELETE request. Send it to:
 
-`/api/v1/products/cxxxxxxx`
+`/api/v1/apostrophe-pages/cxxxxxxx`
 
 Where `cxxxxxxx` is the `_id` property of the existing page you wish to delete.
 
@@ -599,4 +599,36 @@ Let's return to the "products" example and create a Nunjucks template to be rend
 {% endif %}
 ```
 
-Now let's configure the `products` module to allow 
+Now let's configure the `products` module to allow rendering of the `api/fragment.html` template:
+
+```javascript
+// in app.js, building on your configuration of products earlier
+  'products': {
+    extend: 'apostrophe-pieces',
+    name: 'product',
+    // etc...
+    restApi: true,
+    apiTemplates: [ 'fragment' ]
+  }
+```
+
+You will now receive this fragment of HTML as part of the `render` property of a product retrieved from the API, as long as you ask for it as part of your `GET` REST API request:
+
+`/api/v1/products/ID-OF-PRODUCT-GOES-HERE?render=fragment`
+
+Notice we have added `render=fragment` to the query string, to specifically ask that `api/fragment.html` be rendered.
+
+Now the response will look like:
+
+```javascript
+{
+  _id: "ID-OF-PRODUCT-GOES-HERE",
+  title: "Cool Product",
+  rendered: {
+    fragment: "<h4>Cool Product</h4>... more markup ..."
+  }
+}
+```
+
+> You can render more than one, by passing more than one value for `render`. The resulting URL will look like this: `?render[]=fragment&render[]=other` If you're using `qs` or another good query string builder, you won't have to worry about building that yourself. Just pass an array of template names as `render`.
+
