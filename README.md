@@ -548,7 +548,7 @@ You may use either traditional URL-style encoding or a JSON body. **However if y
 
 To delete a page, make a DELETE request. Send it to:
 
-`/api/v1/products/cxxxxxxx`
+`/api/v1/apostrophe-pages/cxxxxxxx`
 
 Where `cxxxxxxx` is the `_id` property of the existing page you wish to delete.
 
@@ -569,4 +569,66 @@ Your POST body must contain the following fields:
 
 The home page and other "parked" pages may not be moved.
 
+## Rendering full pages and page fragments
+
+Ordinarily, the API simply returns the content of the page or piece as a JSON data structure. Sometimes, you'd like rendered markup.
+
+### Rendering a full page experience
+
+If you just want the full page representation of a page or piece, rendered as usual, use the API to fetch information about that page or piece, and then separately request the URL in its `._url` property. 
+
+> If you make that request from a browser, it will be detected as an AJAX (“xhr”) request, and the outermost markup of the page (styles, script tags, etc.) will not be returned, just the portion inside the div with the `apos-refreshable` class. You can also get this effect in a non-browser request by setting the `apos_refresh=1` query parameter. Otherwise the page is fully rendered, including assets.
+
+### Rendering a page or piece as an HTML fragment
+
+If you wish to render just a fragment of HTML, read on to see how you can create your own templates specifically for use with the API. This is the best approach when Apostrophe content is just one part of the page or experience you are building.
+
+Let's return to the "products" example and create a Nunjucks template to be rendered by the API:
+
+```markup
+{# In lib/modules/products/views/api/fragment.html #}
+
+{# Let's output the title of the piece #}
+<h4>{{ data.piece.title }}</h4>
+{# Now let's render an area as Apostrophe normally would #}
+{{ apo.area(data.piece, 'body') }}
+{# On second thought, let's just render the first image in that area directly #}
+{% set image = apos.images.first(data.piece, 'body') %}
+{% if image %}
+  <img src="{{ apos.attachments.url(image, { size: 'one-half' }) }} " />
+{% endif %}
+```
+
+Now let's configure the `products` module to allow rendering of the `api/fragment.html` template:
+
+```javascript
+// in app.js, building on your configuration of products earlier
+  'products': {
+    extend: 'apostrophe-pieces',
+    name: 'product',
+    // etc...
+    restApi: true,
+    apiTemplates: [ 'fragment' ]
+  }
+```
+
+You will now receive this fragment of HTML as part of the `render` property of a product retrieved from the API, as long as you ask for it as part of your `GET` REST API request:
+
+`/api/v1/products/ID-OF-PRODUCT-GOES-HERE?render=fragment`
+
+Notice we have added `render=fragment` to the query string, to specifically ask that `api/fragment.html` be rendered.
+
+Now the response will look like:
+
+```javascript
+{
+  _id: "ID-OF-PRODUCT-GOES-HERE",
+  title: "Cool Product",
+  rendered: {
+    fragment: "<h4>Cool Product</h4>... more markup ..."
+  }
+}
+```
+
+> You can render more than one, by passing more than one value for `render`. The resulting URL will look like this: `?render[]=fragment&render[]=other` If you're using `qs` or another good query string builder, you won't have to worry about building that yourself. Just pass an array of template names as `render`.
 
