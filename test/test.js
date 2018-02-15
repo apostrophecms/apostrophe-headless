@@ -11,7 +11,7 @@ describe('test apostrophe-headless', function() {
   var adminGroup;
   var bearer;
 
-  this.timeout(10000);
+  this.timeout(20000);
 
   after(function(done) {
     apos.db.dropDatabase(function(err) {
@@ -87,6 +87,7 @@ describe('test apostrophe-headless', function() {
         'apostrophe-pages': {
           restApi: true,
           apiKeys: [ 'page-key' ],
+          apiTemplates: [ 'fragment' ],
           park: [
             {
               type: 'default',
@@ -126,7 +127,17 @@ describe('test apostrophe-headless', function() {
                   slug: '/tab-two/child-two',
                   published: true
                 },
-              ]
+              ],
+              body: {
+                type: 'area',
+                items: [
+                  {
+                    type: 'apostrophe-rich-text',
+                    content: '<h3>How I discovered cheese</h3>\n' +
+                      '<p>In the mountains of Pennsport, I found a spring.</p>'
+                  }
+                ] 
+              }
             },
           ]
         }
@@ -734,6 +745,19 @@ describe('test apostrophe-headless', function() {
       assert(response._children[0].title === 'Tab Two');
       assert(response._children[0]._children && (response._children[0]._children.length === 3));
       assert(response._children[0]._children[0].title === 'Tab One');
+      done();
+    });
+  });
+
+  it('can render a page', function(done) {
+    http('/api/v1/apostrophe-pages/' + tabTwoId, 'GET', { render: 'fragment', apiKey: 'page-key' }, {
+      targetId: tabTwoId,
+      position: 'inside'
+    }, undefined, function(err, response) {
+      assert(!err);
+      assert(response.rendered && response.rendered.fragment && response.rendered.fragment.indexOf('<h4>Tab Two</h4>') !== -1);
+      assert(response.rendered && response.rendered.fragment && response.rendered.fragment.indexOf('cheese') !== -1);
+      console.log(response.rendered.fragment);
       done();
     });
   });

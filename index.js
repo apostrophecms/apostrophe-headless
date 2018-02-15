@@ -276,6 +276,57 @@ module.exports = {
 
     };
 
+    // Given a module and API result object so far, render the doc
+    // with the appropriate `api/` template of that module. 
+    // The template is called with `data.page` or `data.piece`
+    // beig available depending on whether `name` is `page` or `piece`.
+
+    self.apiRender = function(req, module, doc, name, callback) {
+      var render = req.query.render;
+      if (!render) {
+        return callback(null);
+      }
+      // remove edit flags from widgets as that markup is
+      // completely extraneous in an API response
+      removeEditFlags(doc);
+      if (!Array.isArray(render)) {
+        render = [ render ];
+      }
+      doc.rendered = {};
+      var bad = false;
+      _.each(render, function(template) {
+        template = self.apos.launder.string(template);
+        if (!_.includes(module.options.apiTemplates, template)) {
+          bad = true;
+          return false;
+        }
+        var data = {};
+        data[name] = doc;
+        doc.rendered[template] = module.render(req, 'api/' + template, data);
+      });
+      if (bad) {
+        return callback('badrequest');
+      }
+      return callback(null);
+
+      function removeEditFlags(doc) {
+        if (Array.isArray(doc)) {
+          _.each(doc, iterator);
+        } else {
+          _.forOwn(doc, iterator);
+        }
+        function iterator(val, key) {
+          if (key === '_edit') {
+            doc[key] = false;
+          }
+          if (typeof(val) === 'object') {
+            removeEditFlags(val);
+          }
+        }
+      }
+
+    };
+
   }
 
 };
