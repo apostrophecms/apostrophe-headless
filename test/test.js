@@ -11,7 +11,7 @@ describe('test apostrophe-headless', function() {
   var adminGroup;
   var bearer;
 
-  this.timeout(5000);
+  this.timeout(10000);
 
   after(function(done) {
     apos.db.dropDatabase(function(err) {
@@ -26,7 +26,7 @@ describe('test apostrophe-headless', function() {
   it('initializes', function(done) {
     apos = require('apostrophe')({
       testModule: true,
-      
+      shortName: 'apostrophe-headless-test',      
       modules: {
         'apostrophe-express': {
           secret: 'xxx',
@@ -92,16 +92,19 @@ describe('test apostrophe-headless', function() {
               type: 'default',
               title: 'Tab One',
               slug: '/tab-one',
+              published: true,
               _children: [
                 {
                   type: 'default',
                   title: 'Tab One Child One',
-                  slug: '/tab-one/child-one'
+                  slug: '/tab-one/child-one',
+                  published: true
                 },
                 {
                   type: 'default',
                   title: 'Tab One Child Two',
-                  slug: '/tab-one/child-two'
+                  slug: '/tab-one/child-two',
+                  published: true
                 },
               ]
             },
@@ -109,16 +112,19 @@ describe('test apostrophe-headless', function() {
               type: 'default',
               title: 'Tab Two',
               slug: '/tab-two',
+              published: true,
               _children: [
                 {
                   type: 'default',
                   title: 'Tab Two Child One',
-                  slug: '/tab-two/child-one'
+                  slug: '/tab-two/child-one',
+                  published: true
                 },
                 {
                   type: 'default',
                   title: 'Tab Two Child Two',
-                  slug: '/tab-two/child-two'
+                  slug: '/tab-two/child-two',
+                  published: true
                 },
               ]
             },
@@ -577,10 +583,31 @@ describe('test apostrophe-headless', function() {
     });
   });
 
-  var tabOneId;
+  var tabOneId, tabTwoId;
 
+  it('unpark the parked pages other than home and trash to allow testing of move function', function(done) {
+    apos.docs.db.update({ 
+      $and: [ 
+        { slug: /^\// }, 
+        { 
+          slug: { 
+            $nin: [ '/', '/trash' ] 
+          } 
+        } 
+      ] 
+    }, {
+      $unset: {
+        parked: 1
+      }
+    },
+    function(err) {
+      assert(!err);
+      done();
+    });
+  });
+ 
   it('can get the home page and its children', function(done) {
-    return http('/api/v1/pages', 'GET', {}, {}, undefined, function(err, response) {
+    return http('/api/v1/apostrophe-pages', 'GET', {}, {}, undefined, function(err, response) {
       assert(!err);
       assert(response);
       assert(response.slug === '/');
@@ -588,15 +615,16 @@ describe('test apostrophe-headless', function() {
       assert(response._children.length === 2);
       assert(response._children[0].title === 'Tab One');
       assert(response._children[1].title === 'Tab Two');
-      assert(!response._children[0]._children);
+      assert(!(response._children[0]._children && response._children[0]._children.length));
       tabOneId = response._children[0]._id;
+      tabTwoId = response._children[1]._id;
       assert(tabOneId);
       done();
     });
   });
 
   it('can get an individual page by id, with its children', function(done) {
-    return http('/api/v1/pages/' + tabOneId, 'GET', {}, {}, undefined, function(err, response) {
+    return http('/api/v1/apostrophe-pages/' + tabOneId, 'GET', {}, {}, undefined, function(err, response) {
       assert(!err);
       assert(response);
       assert(response.slug === '/tab-one');
@@ -604,19 +632,20 @@ describe('test apostrophe-headless', function() {
       assert(response._children.length === 2);
       assert(response._children[0].title === 'Tab One Child One');
       assert(response._children[1].title === 'Tab One Child Two');
-      assert(!response._children[0]._children);
+      assert(!(response._children[0]._children && response._children[0]._children.length));
       done();
     });
   });
 
   it('cannot get the entire page tree without an api key', function(done) {
-    return http('/api/v1/pages', 'GET', { all: 1 }, {}, undefined, function(err, response) {
+    return http('/api/v1/apostrophe-pages', 'GET', { all: 1 }, {}, undefined, function(err, response) {
       assert(err);
+      done();
     });
   });
 
   it('can get the entire page tree with an api key', function(done) {
-    return http('/api/v1/pages', 'GET', { all: 1 }, {}, undefined, function(err, response) {
+    return http('/api/v1/apostrophe-pages', 'GET', { all: 1, apiKey: 'page-key' }, {}, undefined, function(err, response) {
       assert(!err);
       assert(response);
       assert(response.slug === '/');
@@ -630,11 +659,26 @@ describe('test apostrophe-headless', function() {
     });
   });
 
+  it('can get the entire page tree as a flat array with an api key', function(done) {
+    return http('/api/v1/apostrophe-pages', 'GET', { all: 1, flat: 1, apiKey: 'page-key' }, {}, undefined, function(err, response) {
+      assert(!err);
+      assert(response);
+      assert(response.length);
+      assert(response[0].slug === '/');
+      assert(response[1].slug === '/tab-one');
+      assert(response[2].slug === '/tab-one/child-one');
+      assert(response[0]._children[0] === response[1]._id);
+      done();
+    });
+  });
+
   var newPage;
 
   it('can insert a new grandchild page with the pages key', function(done) {
-    http('/api/v1/pages', 'POST', { apiKey: 'page-key' }, {
+    http('/api/v1/apostrophe-pages', 'POST', { apiKey: 'page-key' }, {
+      _parentId: tabOneId,
       title: 'Tab One Child Three',
+      type: 'default',
       body: {
         type: 'area',
         items: [
@@ -656,23 +700,24 @@ describe('test apostrophe-headless', function() {
 
   it('can update grandchild page with the pages key', function(done) {
     newPage.title = 'Tab One Child Three Modified';
-    http('/api/v1/pages', 'PUT', { apiKey: 'page-key' }, newPage, undefined, function(err, response) {
+    http('/api/v1/apostrophe-pages/' + newPage._id, 'PUT', { apiKey: 'page-key' }, newPage, undefined, function(err, response) {
       assert(!err);
+      assert(response.title === 'Tab One Child Three Modified');
       done();
     });
   });
 
   it('can "delete" grandchild page', function(done) {
-    http('/api/v1/pages/' + newPage._id, 'DELETE', { apiKey: 'page-key' }, {}, undefined, function(err, response) {
+    http('/api/v1/apostrophe-pages/' + newPage._id, 'DELETE', { apiKey: 'page-key' }, {}, undefined, function(err, response) {
       assert(!err);
       done();
     });
   });
 
   it('can turn a child into a grandchild', function(done) {
-    http('/api/v1/pages/move/' + tabOneId, 'POST', { apiKey: 'page-key' }, {
-      relatedId: tabTwoId,
-      relationship: 'inside'
+    http('/api/v1/apostrophe-pages/' + tabOneId + '/move', 'POST', { apiKey: 'page-key' }, {
+      targetId: tabTwoId,
+      position: 'inside'
     }, undefined, function(err, response) {
       assert(!err);
       done();
@@ -680,7 +725,7 @@ describe('test apostrophe-headless', function() {
   });
 
   it('page tree reflects move of child to be grandchild', function(done) {
-    return http('/api/v1/pages', 'GET', { all: 1 }, {}, undefined, function(err, response) {
+    return http('/api/v1/apostrophe-pages', 'GET', { all: 1, apiKey: 'page-key' }, {}, undefined, function(err, response) {
       assert(!err);
       assert(response);
       assert(response.slug === '/');
@@ -688,7 +733,7 @@ describe('test apostrophe-headless', function() {
       assert(response._children.length === 1);
       assert(response._children[0].title === 'Tab Two');
       assert(response._children[0]._children && (response._children[0]._children.length === 3));
-      assert(response._children[0]._children[2].title === 'Tab One');
+      assert(response._children[0]._children[0].title === 'Tab One');
       done();
     });
   });

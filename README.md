@@ -471,7 +471,7 @@ modules: {
 
 Now your app can access:
 
-`/api/v1/pages`
+`/api/v1/apostrophe-pages`
 
 To get information about the home page and its children. The response is a single JSON object with `slug`, `path`, `title`, `type`, `_url` and other properties describing the home page, similar to the way pieces are returned (see the "products" examples above). In addition, information about children of the home page is returned.
 
@@ -483,7 +483,7 @@ Basic information about the top-level children of the home page (aka the "tabs" 
 
 Armed with the `_id`, you can obtain detailed information about a page by making a separate API request:
 
-`/api/v1/pages/ID_GOES_HERE`
+`/api/v1/apostrophe-pages/ID_GOES_HERE`
 
 A page returned in this way will in turn offer its own `_children` property.
 
@@ -504,11 +504,11 @@ It is possible to obtain summary information about the entire page tree with a s
 
 To fetch the entire tree, add `all=1` to your query:
 
-`/api/v1/pages?all=1`
+`/api/v1/apostrophe-pages?all=1`
 
 ### Nested tree response
 
-The response will be a single object representing the home page, with at least `title`, `slug`, `tags`, `_url` and `_id` properties, and a `_children` array. For speed, the response will not be as detailed as in a regular request to `/api/v1/pages`.
+The response will be a single object representing the home page, with at least `title`, `slug`, `tags`, `_url` and `_id` properties, and a `_children` array. For speed, the response will not be as detailed as in a regular request to `/api/v1/apostrophe-pages`.
 
 The pages in the `_children` array, in turn, will feature their own `_children` arrays where needed, with a similarly limited level of detail.
 
@@ -522,7 +522,7 @@ It is possible to obtain a flat version of this data by adding `?flat=1` to the 
 
 It is possible to insert a page via the API:
 
-`/api/v1/pages`
+`/api/v1/apostrophe-pages`
 
 The body of your POST should contain all of the schema fields you wish to set, **and in addition it must contain a `_parentId` property** (note the underscore). The page will be added as the last child of the specified parent page.
 
@@ -534,7 +534,7 @@ On success you will receive a 200 status code and a JSON object containing the n
 
 To update a product, make a PUT request. Send it to:
 
-`/api/v1/pages/cxxxxxxx`
+`/api/v1/apostrophe-pages/cxxxxxxx`
 
 Where `cxxxxxxx` is the `_id` property of the existing page you wish to update.
 
@@ -560,15 +560,14 @@ The response will be an appropriate HTTP status code.
 
 To move a page in the page tree, make a POST request to the following URL:
 
-`/api/v1/pages/move`
+`/api/v1/apostrophe-pages/ID-OF-PAGE/move`
 
 Your POST body must contain the following fields:
 
-* `_id` must be the `_id` of the page to be moved.
-* `relatedId` must be the _id of another page.
-* `relationship` must be `before`, `after` or `inside`. The page referenced by `_id` is moved `before`, `after` or `inside` the page specified by `relatedId`. If `_inside` is specified, the page becomes the last child of `relatedId`.
+* `targetId` must be the _id of another page.
+* `position` must be `before`, `after` or `inside`. The page whose `_id` appears in the URL is moved `before`, `after` or `inside` the page specified by `targetId`. If `inside` is specified, the page becomes the first child of `targetId`.
 
-The home page may not be moved.
+The home page and other "parked" pages may not be moved.
 
 ## Rendering full pages and page fragments
 

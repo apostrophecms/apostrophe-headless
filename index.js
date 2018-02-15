@@ -8,7 +8,7 @@ module.exports = {
 
   moogBundle: {
     directory: 'lib/modules',
-    modules: [ 'apostrophe-pieces-headless' ]
+    modules: [ 'apostrophe-pieces-headless', 'apostrophe-pages-headless' ]
   },
 
   afterConstruct: function(self, callback) {
@@ -248,7 +248,13 @@ module.exports = {
           var taskReq = self.apos.tasks.getReq();
           req.user = taskReq.user;
           req.user._permissions = { 'edit-attachment': true };
-          req.user._permissions['admin-' + module.name] = true;
+          // TODO this check would be better factored as a method
+          // we call on the modules to get their effective type name
+          if (module.__meta.name === 'apostrophe-pages') {
+            req.user._permissions['admin-apostrophe-page'] = true;
+          } else {
+            req.user._permissions['admin-' + module.name] = true;
+          }
           req.csrfExempt = true;
           return next();
         }
