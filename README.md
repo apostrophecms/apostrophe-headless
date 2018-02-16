@@ -575,7 +575,7 @@ Ordinarily, the API simply returns the content of the page or piece as a JSON da
 
 ### Rendering a full page experience
 
-If you just want the full page representation of a page or piece, rendered as usual, use the API to fetch information about that page or piece, and then separately request the URL in its `._url` property. 
+If you just want the full page representation of a page or piece, rendered as Apostrophe would normally do it, use the API to fetch information about that page or piece, and then separately request the URL in its `._url` property. 
 
 > If you make that request from a browser, it will be detected as an AJAX (“xhr”) request, and the outermost markup of the page (styles, script tags, etc.) will not be returned, just the portion inside the div with the `apos-refreshable` class. You can also get this effect in a non-browser request by setting the `apos_refresh=1` query parameter. Otherwise the page is fully rendered, including assets.
 
@@ -630,5 +630,7 @@ Now the response will look like:
 }
 ```
 
-> You can render more than one, by passing more than one value for `render`. The resulting URL will look like this: `?render[]=fragment&render[]=other` If you're using `qs` or another good query string builder, you won't have to worry about building that yourself. Just pass an array of template names as `render`.
+> You can render more than one, by passing more than one value for `render`. The resulting URL will look like this: `?render[]=fragment&render[]=other`
+>
+> If you're using `qs` or another good query string builder, you won't have to worry about building that yourself. Just pass an array of template names as `render`.
 

@@ -41,6 +41,7 @@ describe('test apostrophe-headless', function() {
           restApi: true,
           name: 'product',
           apiKeys: ['product-key' ],
+          apiTemplates: [ 'fragment' ],
           addFields: [
             {
               name: 'body',
@@ -594,6 +595,28 @@ describe('test apostrophe-headless', function() {
     });
   });
 
+  it('can render a fragment of a product', function(done) {
+    http('/api/v1/products/' + productWithPhoto._id, 'GET', { render: 'fragment' }, undefined, undefined, function(err, result) {
+      assert(!err);
+      assert(result);
+      assert(result.rendered);
+      assert(result.rendered.fragment);
+      assert(result.rendered.fragment.indexOf('<h4>Product With Photo</h4>') !== -1);
+      done();
+    });
+  });
+
+  it('can render a fragment of many products', function(done) {
+    http('/api/v1/products', 'GET', { render: 'fragment' }, undefined, undefined, function(err, result) {
+      assert(!err);
+      assert(result);
+      assert(result.results.length >= 2);
+      assert(result.results[0].rendered.fragment.indexOf('<h4>Product With Photo</h4>') !== -1);
+      assert(result.results[1].rendered.fragment.indexOf('<h4>Product Key Product</h4>') !== -1);
+      done();
+    });
+  });
+
   var tabOneId, tabTwoId;
 
   it('unpark the parked pages other than home and trash to allow testing of move function', function(done) {
@@ -757,7 +780,6 @@ describe('test apostrophe-headless', function() {
       assert(!err);
       assert(response.rendered && response.rendered.fragment && response.rendered.fragment.indexOf('<h4>Tab Two</h4>') !== -1);
       assert(response.rendered && response.rendered.fragment && response.rendered.fragment.indexOf('cheese') !== -1);
-      console.log(response.rendered.fragment);
       done();
     });
   });
