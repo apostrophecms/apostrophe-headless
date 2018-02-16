@@ -1,3 +1,9 @@
+## 2.1.0
+
+* Support for API keys, as a lightweight alternative to bearer tokens for server-to-server communication. These should not be compiled into mobile apps, i.e. anywhere users might be able to obtain them by decompiling, etc.
+* Support for pages, both reading and writing.
+* Support for fragment rendering, and documentation on how to get fully rendered versions.
+
 ## 2.0.4
 
 Documentation changes only. Gave some simple examples of query parameters that can be used to filter the results.
