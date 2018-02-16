@@ -8,12 +8,12 @@ module.exports = {
 
   moogBundle: {
     directory: 'lib/modules',
-    modules: [ 'apostrophe-pieces-headless' ]
+    modules: [ 'apostrophe-pieces-headless', 'apostrophe-pages-headless' ]
   },
 
   afterConstruct: function(self, callback) {
     self.addRoutes();
-    if (self.options.bearerTokens) {
+    if (self.options.bearerTokens || self.options.apiKeys) {
       self.apos.on('csrfExceptions', self.addCsrfException);
     }
     return self.enableCollection(callback);
@@ -22,10 +22,12 @@ module.exports = {
   construct: function(self, options) {
 
     self.endpoint = '/api/v' + (options.version || 1);
+    self.registeredModules = [];
         
     // Exclude the REST APIs from CSRF protection. However,
     // this module will call the CSRF protection middleware
-    // itself if a user is not present based on a bearer token.
+    // itself if a user is not present based on a bearer token
+    // or api key
     self.addCsrfException = function(exceptions) {
       exceptions.push(self.endpoint + '/**');
     };
@@ -100,6 +102,12 @@ module.exports = {
         });
       }
 
+      if (self.options.apiKeys) {
+        self.apos.app.use(self.apiKeyMiddleware);
+      }
+
+      self.apos.app.use(self.applyCsrfUnlessExemptMiddleware);
+
       self.apos.app.post(self.endpoint + '/attachments', self.apos.attachments.middleware.canUpload, self.apos.middleware.files, function(req, res) {
         var userAgent = req.headers['user-agent'];
         var matches = userAgent && userAgent.match(/MSIE (\d+)/);
@@ -123,6 +131,13 @@ module.exports = {
         });
       });
 
+    };
+
+    self.applyCsrfUnlessExemptMiddleware = function(req, res, next) {
+      if (req.csrfExempt) {
+        return next();
+      }
+      return self.apos.modules['apostrophe-express'].csrfWithoutExceptions(req, res, next);
     };
     
     // Instantiate the express-bearer-token middleware for use
@@ -155,7 +170,7 @@ module.exports = {
       self.bearerTokenMiddleware(req, res, function() {
         var userId, user;
         if (!req.token) {
-          return self.apos.modules['apostrophe-express'].csrfWithoutExceptions(req, res, next);
+          return next();
         }
         return async.series([
           getBearer,
@@ -167,8 +182,8 @@ module.exports = {
           }
           if (!user) {
             return res.status(401).send({ 'error': 'bearer token invalid' });
-            return self.apos.modules['apostrophe-express'].csrfWithoutExceptions(req, res, next);
           }
+          req.csrfExempt = true;
           req.user = user;
           return next();
         });
@@ -202,6 +217,116 @@ module.exports = {
         }
       });
     };
+
+    // Modules supporting the REST API call this method to register themselves
+    // so that, for instance, module specific api keys can be checked
+    self.registerModule = function(module) {
+      self.registeredModules.push(module);
+    };
+    
+    self.apiKeyMiddleware = function(req, res, next) {
+
+      if (req.url.substr(0, self.endpoint.length + 1) !== (self.endpoint + '/')) {
+        return next();
+      }
+
+      var key = req.query.apikey || req.query.apiKey || getAuthorizationApiKey();
+      if (!key) {
+        return next();
+      }
+
+      if (_.includes(self.options.apiKeys, key)) {
+        var taskReq = self.apos.tasks.getReq();
+        req.user = taskReq.user;
+        req.csrfExempt = true;
+        return next();
+      } else {
+        var module = _.find(self.registeredModules, function(module) {
+          return _.includes(module.options.apiKeys, key);
+        });
+        if (module) {
+          var taskReq = self.apos.tasks.getReq();
+          req.user = taskReq.user;
+          req.user._permissions = { 'edit-attachment': true };
+          // TODO this check would be better factored as a method
+          // we call on the modules to get their effective type name
+          if (module.__meta.name === 'apostrophe-pages') {
+            req.user._permissions['admin-apostrophe-page'] = true;
+          } else {
+            req.user._permissions['admin-' + module.name] = true;
+          }
+          req.csrfExempt = true;
+          return next();
+        }
+      }
+
+      return res.status(403).send({ 'error': 'invalid api key' });
+
+      function getAuthorizationApiKey() {
+        var header = req.headers.authorization;
+        if (!header) {
+          return null;
+        }
+        var matches = header.match(/^ApiKey\s+(\S+)$/i);
+        if (!matches) {
+          return null;
+        }
+        return matches[1];
+      }
+
+    };
+
+    // Given a module and API result object so far, render the doc
+    // with the appropriate `api/` template of that module. 
+    // The template is called with `data.page` or `data.piece`
+    // beig available depending on whether `name` is `page` or `piece`.
+
+    self.apiRender = function(req, module, doc, name, callback) {
+      var render = req.query.render;
+      if (!render) {
+        return callback(null);
+      }
+      // remove edit flags from widgets as that markup is
+      // completely extraneous in an API response
+      removeEditFlags(doc);
+      if (!Array.isArray(render)) {
+        render = [ render ];
+      }
+      doc.rendered = {};
+      var bad = false;
+      _.each(render, function(template) {
+        template = self.apos.launder.string(template);
+        if (!_.includes(module.options.apiTemplates, template)) {
+          bad = true;
+          return false;
+        }
+        var data = {};
+        data[name] = doc;
+        doc.rendered[template] = module.render(req, 'api/' + template, data);
+      });
+      if (bad) {
+        return callback('badrequest');
+      }
+      return callback(null);
+
+      function removeEditFlags(doc) {
+        if (Array.isArray(doc)) {
+          _.each(doc, iterator);
+        } else {
+          _.forOwn(doc, iterator);
+        }
+        function iterator(val, key) {
+          if (key === '_edit') {
+            doc[key] = false;
+          }
+          if (typeof(val) === 'object') {
+            removeEditFlags(val);
+          }
+        }
+      }
+
+    };
+
   }
 
 };
