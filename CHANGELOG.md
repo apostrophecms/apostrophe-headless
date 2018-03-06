@@ -1,3 +1,7 @@
+## 2.1.1
+
+* Fixed bug impacting the data provided by the `GET` route for pages when `all=1` is present. The data was incomplete due to missing query criteria.
+
 ## 2.1.0
 
 * Support for API keys, as a lightweight alternative to bearer tokens for server-to-server communication. These should not be compiled into mobile apps, i.e. anywhere users might be able to obtain them by decompiling, etc.
