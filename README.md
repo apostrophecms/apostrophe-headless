@@ -292,7 +292,7 @@ Just bear these facts in mind:
 * Other properties are specific to each widget type, based on its schema. It's often helpful to use the MongoDB shell to investigate a few examples in your site's database.
 * Rich text widgets contain markup in a `content` property.
 * Array schema fields have `type: "array"` and an `items` array containing their content. Each item must have a unique `id` property.
-* If you won't be serving any pages through Apostrophe (a headless setup), you'll need to fully specify your areas and singletons in the schema of your piece type, including passing all the options you would otherwise pass in a template. Don't use `contextual: true` for headless areas; you'll be doing all of your editing in the "edit" dialog box for the piece.
+* **You must fully specify your areas and singletons in the schema of your piece type or page type,** including passing all the options you would otherwise pass in a template. Since templates are not in play there would otherwise be no validation of appropriate widget types.
 
 Here's an example of a simple area containing a standard `apostrophe-rich-text` widget, a "nav" widget specific to a particular site which contains an `array` schema field, and a standard `apostrophe-images` widget:
 
