@@ -530,6 +530,8 @@ The body of your POST should contain all of the schema fields you wish to set, *
 
 On success you will receive a 200 status code and a JSON object containing the new page.
 
+**If you wish to insert or update areas, they must be present in the schema of the page type.**
+
 ## Updating a page
 
 To update a product, make a PUT request. Send it to:
@@ -543,6 +545,8 @@ On success you will receive a 200 status code and the updated JSON object repres
 You may use either traditional URL-style encoding or a JSON body. **However if you are working with Apostrophe areas you must use a JSON body** (see below).
 
 **You may not move a page in the page tree via this method. The `path`, `level` and `rank` properties cannot be modified by this method.** To move a page in the page tree, see ["moving a page in the page tree,"](#moving-a-page-in-the-page-tree) below.
+
+**If you wish to insert or update areas, they must be present in the schema of the page type.**
 
 ## Deleting a page
 

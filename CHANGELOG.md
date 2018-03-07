@@ -1,3 +1,7 @@
+## 2.1.2
+
+* Documentation changes only. Clarified that areas must be present in the schema to be inserted or updated via the API.
+
 ## 2.1.1
 
 * Fixed bug impacting the data provided by the `GET` route for pages when `all=1` is present. The data was incomplete due to missing query criteria.
