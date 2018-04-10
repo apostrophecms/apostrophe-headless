@@ -1,3 +1,7 @@
+## 2.2.0
+
+* New `restApi.safeFilters` option (thanks to Marjan Georgiev), and documentation of the `restApi.maxPerPage` option.
+
 ## 2.1.2
 
 * Documentation changes only. Clarified that areas must be present in the schema to be inserted or updated via the API.

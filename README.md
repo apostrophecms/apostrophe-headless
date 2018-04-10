@@ -38,6 +38,27 @@ modules: {
 }
 ```
 
+### Configuration options
+
+You can also pass options for the REST API:x
+
+```javascript
+  'products': {
+    // etc...
+    restApi: {
+      // max 50 pieces per API result (the default)
+      maxPerPage: 50,
+      // Allow the public API to invoke additional
+      // cursor filters. Note that most schema
+      // fields have a cursor filter available
+      safeFilters: [ 'slug' ]
+    }
+  }
+}
+```
+
+> Setting `maxPerPage` high can have performance impacts. Consider designing your app with pagination or infinite scroll in mind rather than fetching thousands of pieces the user will not actually look at.
+
 > All of the documentation below discusses the `products` example above. Of course you may also configure the `restApi` option for other modules that extend pieces.
 
 ## Retrieving all the products
@@ -46,7 +67,7 @@ Now your app can access:
 
 `/api/v1/products`
 
-To get the first page of products (50 per page). The response is JSON. See the `results` property for an array of products included in the first page, and the `pages` property for the total number of pages. 
+To get the first page of products (50 per page, unless `maxPerPage` is adjusted as shown above). The response is JSON. See the `results` property for an array of products included in the first page, and the `pages` property for the total number of pages. 
 
 If you want to fetch a second page of products:
 
@@ -63,6 +84,18 @@ Here are some examples:
 `/api/v1/products?autocomplete=che`
 
 There's much more. You can use any [cursor filter](http://apostrophecms.org/docs/tutorials/intermediate/cursors.html) that offers a `sanitize` method via the query string. It's [not hard to add custom filters](http://apostrophecms.org/docs/tutorials/intermediate/cursors.html#custom-filters) if you need to, but keep in mind that most schema field types have built-in [filter support](http://apostrophecms.org/docs/tutorials/intermediate/cursors.html).
+
+To call most filters from the public API, you will need to use the `safeFilters` option to declare these filters "safe.". Rather than just `restApi: true`, write:
+
+```javascript
+'my-module': {
+  restApi: {
+    // We're assuming here that you have added fields
+    // called 'color' and 'brand' in your schema
+    safeFilters: [ 'slug', 'color', 'brand' ]
+  }
+}
+```
 
 ### Access as a logged-in user
 
