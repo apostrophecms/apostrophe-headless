@@ -1,5 +1,5 @@
 var async = require('async');
-var _ = require('@sailshq/lodash');
+var _ = require('lodash');
 var cuid = require('cuid');
 var expressBearerToken = require('express-bearer-token');
 var cors = require('cors');
