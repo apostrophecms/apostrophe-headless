@@ -1,4 +1,6 @@
-## Apostrophe as a headless CMS
+## Apostrophe as a headless CMS - With single page request by slug
+
+This fork of apostrophe-headless was created to serve my needs for a specific project. I will maintain it as apostrophe-headless updates as long as this is not an option in the main repo. I am open to pull-requests if there are suggestions on abstracting the slug value. 
 
 <img src="https://raw.github.com/punkave/apostrophe-headless/master/jack-o-lantern-head.jpg" align="right" />
 
