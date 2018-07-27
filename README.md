@@ -293,7 +293,7 @@ On success you will receive a 200 status code and a JSON object containing the n
 
 ## Updating a product
 
-To update a product, make a PUT request. Send it to:
+To update a product **completely, sending all the data again**, make a PUT request. Send it to:
 
 `/api/v1/products/cxxxxxxx`
 
@@ -302,6 +302,101 @@ Where `cxxxxxxx` is the `_id` property of the existing product you wish to updat
 On success you will receive a 200 status code and the updated JSON object representing the product.
 
 You may use either traditional URL-style encoding or a JSON body. **However if you are working with Apostrophe areas you must use a JSON body** (see below).
+
+> If you want to update just SOME of the properties, without the risk that some of your other data is incomplete or out of date, use PATCH (see below).
+
+## Patching a product
+
+To patch a product **partially, sending only the changes**, make a `PATCH` request. Send it to:
+
+`/api/v1/products/cxxxxxxx`
+
+Where `cxxxxxxx` is the `_id` property of the existing product you wish to patch. Use the `PATCH` HTTP method.
+
+Include only the properties you wish to change. If a property is present in your request body, it will be updated. If it is present, but empty, it will be updated to an empty value, which may or may not be accepted depending on your schema.
+
+On success you will receive a 200 status code and the updated JSON object representing the entire product.
+
+You may use either traditional URL-style encoding or a JSON body. **However if you are working with Apostrophe areas you must use a JSON body** (see below).
+
+### Patching just part of an array property
+
+You may also `PATCH` an array property without re-sending the entire array. `apostrophe-headless` supports several operators based on the MongoDB operators of the same name.
+
+> To use this feature, you MUST use a JSON body, not traditional URL-style encoding.
+
+If your schema includes this field:
+
+```javascript
+{
+  name: 'addresses',
+  type: 'array',
+  schema: [
+    {
+      name: 'street',
+      type: 'string'
+    }
+  ]
+}
+```
+
+Then you may carry out the following operations:
+
+#### `$push`: append one
+
+```javascript
+{
+  $push: {
+    addresses: {
+      street: '103 Test Lane'
+    }
+  }
+}
+```
+
+#### `$push` with `$each`: append many
+
+```javascript
+{
+  $push: {
+    addresses: {
+      $each: [
+        {
+          street: '104 Test Lane'
+        },
+        {
+          street: '105 Test Lane'
+        },
+        {
+          street: '106 Test Lane'
+        },
+      ]
+    }
+  }
+}
+```
+
+### `$pullAll`: remove array entries matching complete value
+
+```javascript
+{
+  $pullAll: {
+    addresses: [ addresses[0] ]
+  }
+}
+```
+
+### `$pullAllById`: remove array entries matching `id` or `_id` property
+
+```javascript
+$pullAllById: {
+  addresses: [ addresses[0].id ]
+}
+```
+
+> "But where do I get `addresses[0].id` from?" Typically from an earlier `GET` or `POST` operation.
+
+> Array operators can be used to manipulate `array` schema fields, the widget array of an area, or the `idsField` of a join.
 
 ## Deleting a product
 

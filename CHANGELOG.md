@@ -1,3 +1,7 @@
+## 2.3.0
+
+* Support for the `PATCH` method, which allows you to send just the fields you want to change, with support for simple array operators as well. Thanks to Paul Grieselhuber for his support.
+
 ## 2.2.0
 
 * New `restApi.safeFilters` option (thanks to Marjan Georgiev), and documentation of the `restApi.maxPerPage` option.
