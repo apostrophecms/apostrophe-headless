@@ -1,3 +1,4 @@
+test/data/temp
 package-lock.json
 test/public/modules/*
 test/public/css/master-*
