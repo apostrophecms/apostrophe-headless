@@ -363,13 +363,6 @@ module.exports = {
           }
         });
       }
-      function eliminateDuplicates(data) {
-        _.each(data, function(val, key) {
-          _.set(page, key, _.uniqWith(_.get(page, key), function(a, b) {
-            return _.isEqual(a, b);
-          }));
-        });
-      }
     };
 
     self.subsetSchemaForPatch = function(schema, doc) {
