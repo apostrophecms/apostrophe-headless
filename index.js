@@ -327,6 +327,58 @@ module.exports = {
 
     };
 
+    // Implementation detail, called for you by the PATCH route.
+    // Applies changes in `page` to `existingPage`, including support
+    // for the `$push`, `$pullAll`, and `$pullAllById` operators.
+
+    self.implementPatchOperators = function(existingPage, page) {
+      if (page.$push) {
+        append(page.$push);
+      } else if (page.$pullAll) {
+        _.each(page.$pullAll, function(val, key) {
+          _.set(page, key, _.differenceWith(_.get(existingPage, key) || [], _.get(page.$pullAll, key) || [], function(a, b) {
+            return _.isEqual(a, b);
+          }));
+        });
+      } else if (page.$pullAllById) {
+        _.each(page.$pullAllById, function(val, key) {
+          _.set(page, key, _.get(existingPage, key) || []);
+          if (!Array.isArray(val)) {
+            val = [ val ];
+          }
+          _.set(page, key, _.differenceWith(_.get(existingPage, key) || [], _.get(page.$pullAllById, key), function(a, b) {
+            return (a._id || a.id) === b;
+          }));
+        });
+      }
+      function append(data) {
+        _.each(data, function(val, key) {
+          _.set(page, key, _.get(existingPage, key) || []);
+          if (val && val.$each) {
+            _.set(page, key, (_.get(page, key) || []).concat(val.$each));
+          } else {
+            var existing = _.get(page, key) || [];
+            existing.push(val);
+            _.set(page, key, existing);
+          }
+        });
+      }
+    };
+
+    self.subsetSchemaForPatch = function(schema, doc) {
+      return self.apos.schemas.subset(schema, _.keys(doc).concat(operatorKeys()));
+      function operatorKeys() {
+        return _.uniq(_.flatten(
+          _.map([ '$push', '$pullAll', '$pullAllById' ], function(o) {
+            return _.map(_.keys(doc[o] || {}), function(key) {
+              return key.toString().split(/\./)[0];
+            });
+          })
+        ));
+      }
+
+    }
+
   }
 
 };
