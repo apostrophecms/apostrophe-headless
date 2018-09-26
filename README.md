@@ -38,7 +38,7 @@ modules: {
 
 ### Configuration options
 
-You can also pass options for the REST API:x
+You can also pass options for the REST API:
 
 ```javascript
   'products': {
@@ -51,7 +51,7 @@ You can also pass options for the REST API:x
       // fields have a cursor filter available
       safeFilters: [ 'slug' ],
       // Restrict GET routes to users with correct permission (false by default)
-      addPermissionToGetRoutes: true
+      getRequiredEditPermission: true
     }
   }
 }
@@ -94,6 +94,17 @@ To call most filters from the public API, you will need to use the `safeFilters`
     // called 'color' and 'brand' in your schema
     safeFilters: [ 'slug', 'color', 'brand' ]
   }
+}
+```
+
+You can restrict what fields to send by adding `private: true` to a specific field. If only logged-out users should not see a specific field, but logged-in users should, you can pass the option `privateOnlyForPublic: true`. 
+
+```javascript
+{
+  name: 'specificField',
+  label: 'Specific Field',
+  type: 'string',
+  private: true
 }
 ```
 
