@@ -1035,8 +1035,20 @@ describe('test apostrophe-headless', function() {
       assert(response);
       assert(response.results);
       assert(response.results.length === 0);
+      apos.modules.products.options.restApi = true;
+      done();
+    });
+  }); 
 
-      apos.modules.products.options.restApi = true
+  it('can GET a product without private fields', function(done) {
+    apos.modules.products.schema[0].private = true;
+    var name = apos.modules.products.schema[0].name;
+    return http('/api/v1/products', 'GET', {}, {}, undefined, function(err, response) {
+      assert(!err);
+      assert(response);
+      assert(response.results);
+      assert(typeof response.results[name] === 'undefined');
+      apos.modules.products.schema[0].private = false;
       done();
     });
   }); 
