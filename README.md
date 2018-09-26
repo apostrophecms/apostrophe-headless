@@ -49,7 +49,9 @@ You can also pass options for the REST API:x
       // Allow the public API to invoke additional
       // cursor filters. Note that most schema
       // fields have a cursor filter available
-      safeFilters: [ 'slug' ]
+      safeFilters: [ 'slug' ],
+      // Restrict GET routes to users with correct permission (false by default)
+      addPermissionToGetRoutes: true
     }
   }
 }

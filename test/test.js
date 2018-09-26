@@ -1026,6 +1026,21 @@ describe('test apostrophe-headless', function() {
     });
   });
 
+  it('cannot GET a product when user has not the right permission', function(done) {
+    apos.modules.products.options.restApi = {
+      addPermissionToGetRoutes: true
+    }
+    return http('/api/v1/products', 'GET', {}, {}, undefined, function(err, response) {
+      assert(!err);
+      assert(response);
+      assert(response.results);
+      assert(response.results.length === 0);
+
+      apos.modules.products.options.restApi = true
+      done();
+    });
+  }); 
+
 });
 
 function http(url, method, query, form, bearer, extra, callback) {
