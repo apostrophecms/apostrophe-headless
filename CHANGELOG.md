@@ -1,3 +1,8 @@
+## 2.4.0
+
+* You may now exclude a field from the GET method of the API entirely by setting `api: false` in its schema field definition. You may also set `api: 'editPermissionRequired'` to restrict access to that field to those who can edit the doc in question. Thanks to Anthony Tarlao.
+* If you would like to restrict GET access completely to those with edit permissions for the doc in question, you may now set the `getRequiresEditPermission` sub-option of `restApi` to `true`. Thanks again to Anthony Tarlao.
+
 ## 2.3.0
 
 * Support for the `PATCH` method, which allows you to send just the fields you want to change, with support for simple array operators as well. Thanks to Paul Grieselhuber for his support.

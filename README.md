@@ -97,7 +97,7 @@ To call most filters from the public API, you will need to use the `safeFilters`
 }
 ```
 
-You can restrict what fields to send by adding `api: false` to a specific field. If only logged-out users should not see a specific field, but logged-in users should, you can pass the option `api: 'editPermissionRequired'`. 
+You can restrict what fields to send by adding `api: false` to a specific schema field. If only users with editing permissions for the doc should see a specific field, you can pass the option `api: 'editPermissionRequired'`. 
 
 ```javascript
 {
