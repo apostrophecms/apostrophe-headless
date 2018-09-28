@@ -97,14 +97,14 @@ To call most filters from the public API, you will need to use the `safeFilters`
 }
 ```
 
-You can restrict what fields to send by adding `private: true` to a specific field. If only logged-out users should not see a specific field, but logged-in users should, you can pass the option `privateOnlyForPublic: true`. 
+You can restrict what fields to send by adding `api: false` to a specific field. If only logged-out users should not see a specific field, but logged-in users should, you can pass the option `api: 'loginRequired'`. 
 
 ```javascript
 {
   name: 'specificField',
   label: 'Specific Field',
   type: 'string',
-  private: true
+  api: false
 }
 ```
 
