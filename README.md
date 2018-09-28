@@ -51,7 +51,7 @@ You can also pass options for the REST API:
       // fields have a cursor filter available
       safeFilters: [ 'slug' ],
       // Restrict GET routes to users with correct permission (false by default)
-      getRequiredEditPermission: true
+      getRequiresEditPermission: true
     }
   }
 }
