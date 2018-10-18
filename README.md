@@ -618,6 +618,24 @@ To get information about the home page and its children. The response is a singl
 
 Basic information about the top-level children of the home page (aka the "tabs" of your site) is available in the `_children` property of the returned object. This property is an array. Each element has, at a minimum, `_id`, `title`, `type` and `slug` properties.
 
+#### Changing how child pages are fetched
+
+By default, basic information about child pages is returned. For speed, widget loaders are not called, so image widgets and the like are not available.
+
+You can change this using the `children` option to the module. For instance, this configuration will fetch the area called `thumbnail`, but leave all others unfetched for speed:
+
+```javascript
+  'apostrophe-pages': {
+    restApi: {
+      children: {
+        areas: [ 'thumbnail' ]
+      }
+    }
+  }
+```
+
+You can pass a value for any [cursor filter method](https://apostrophecms.org/docs/tutorials/intermediate/cursors.html), not just `areas`. 
+
 ### Fetching detailed information about one page
 
 Armed with the `_id`, you can obtain detailed information about a page by making a separate API request:
@@ -634,6 +652,25 @@ This response will include schema fields, areas, etc. in the same detail as it w
 ### Accessing ancestor pages
 
 Pages also have an `_ancestors` array. This functions similarly to the `_children` array. The first entry is the home page, and the last entry is the immediate parent of the page in question.
+
+#### Changing how ancestors are fetched
+
+Similar to children, ancestor pages are fetched with just the basic information for better performance. You can adjust how ancestors are fetched like this:
+
+```javascript
+  'apostrophe-pages': {
+    restApi: {
+      ancestors: {
+        // We do want this one area to be fully loaded because
+        // it contains a singleton apostrophe-images widget
+        // with an icon representing the page
+        areas: [ 'thumbnail' ]
+      }
+    }
+  }
+```
+
+You can pass a value for any [cursor filter method](https://apostrophecms.org/docs/tutorials/intermediate/cursors.html), not just `areas`. 
 
 ### Obtaining the entire page tree with a single request
 
@@ -654,6 +691,29 @@ The pages in the `_children` array, in turn, will feature their own `_children` 
 ### Flat response
 
 It is possible to obtain a flat version of this data by adding `?flat=1` to the URL. In this case, a flat JSON array is returned. The array is sorted by depth, then by rank. Pages may still have a `_children` array, however it will only contain the `_id`s of the child pages, not the pages themselves. In this way you can still reconstruct the tree if you wish.
+
+### Adding more detail to the response
+
+For better prformance, the documents in the tree will be returned with just the basic information. You can chance this using the `tree` option to the module:
+
+```javascript
+  'apostrophe-pages': {
+    restApi: {
+      tree: {
+        // We do want this one area to be fully loaded because
+        // it contains a singleton apostrophe-images widget
+        // with an icon representing the page
+        areas: [ 'thumbnail' ]
+      }
+    }
+  }
+```
+
+However, be aware that this could have a significant performance impact if there are many pages. Consider fetching them individually if and only if you need more detail.
+
+You can pass a value for any [cursor filter method](https://apostrophecms.org/docs/tutorials/intermediate/cursors.html), not just `areas`. 
+
+> This option is still called `tree` even if you decide to add `?flat=1` to the URL when querying the API.
 
 ## Inserting a page
 

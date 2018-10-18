@@ -794,6 +794,92 @@ describe('test apostrophe-headless', function() {
     });
   });
 
+  var pageAttachment;
+
+  it('can post an attachment with the skeleton API key (query string)', function(done) {
+    return request({
+      url: 'http://localhost:7900/api/v1/attachments?apikey=skeleton-key',
+      method: 'POST',
+      formData: {
+        file: fs.createReadStream(__dirname + '/test-image.jpg')
+      },
+      json: true
+    }, function(err, response, body) {
+      assert(!err);
+      assert(response.statusCode < 400);
+      assert(typeof(body) === 'object');
+      assert(body._id);
+      pageAttachment = body;
+      done();
+    });
+  });
+
+  var pageImageId;
+
+  it('can insert an apostrophe-image with the skeleton key', function(done) {
+    http('/api/v1/apostrophe-images', 'POST', { apiKey: 'skeleton-key' }, {
+      title: 'Tab One Thumbnail',
+      type: 'apostrophe-image',
+      attachment: pageAttachment
+    }, undefined, function(err, response) {
+      assert(!err);
+      assert(response._id);
+      pageImageId = response._id;
+      done();
+    });
+  });
+
+  it('can patch a page to include a singleton with an attachment', function(done) {
+    return http('/api/v1/apostrophe-pages/' + tabOneId, 'PATCH', { apiKey: 'page-key' }, {
+      thumbnail: {
+        type: 'area',
+        items: [
+          {
+            type: 'apostrophe-images',
+            by: 'id',
+            pieceIds: [ pageImageId ]
+          }
+        ]
+      }
+    }, undefined, function(err, response) {
+      assert(!err);
+      assert(response.thumbnail);
+      assert(response.thumbnail.attachment._urls);
+      assert(response.thumbnail.attachment._urls.original);
+      assert(response.thumbnail.attachment._urls.full);
+      done();
+    });
+  });
+
+  it('children of home page do not come back with thumbnail urls by default', function(done) {
+    return http('/api/v1/apostrophe-pages', 'GET', {}, {}, undefined, function(err, response) {
+      assert(!err);
+      assert(response);
+      assert(response.slug === '/');
+      assert(response._children);
+      assert(response._children.length === 2);
+      assert(response._children[0].title === 'Tab One');
+      assert(response._children[0].thumbnail);
+      assert(!response._children[0].thumbnail._pieces);
+      done();
+    });
+  });
+
+  it('children of home page do come back with thumbnail urls if configured appropriately', function(done) {
+    return http('/api/v1/apostrophe-pages', 'GET', {}, {}, undefined, function(err, response) {
+      assert(!err);
+      assert(response);
+      assert(response.slug === '/');
+      assert(response._children);
+      assert(response._children.length === 2);
+      assert(response._children[0].title === 'Tab One');
+      assert(response._children[0].thumbnail);
+      assert(!response._children[0].thumbnail._pieces);
+      done();
+    });
+  });
+
+
   it('can get an individual page by id, with its children', function(done) {
     return http('/api/v1/apostrophe-pages/' + tabOneId, 'GET', {}, {}, undefined, function(err, response) {
       assert(!err);
