@@ -110,9 +110,16 @@ You can restrict what fields to send by adding `api: false` to a specific schema
 }
 ```
 
-Or you can require only specific fields in the GET request by adding the query filter `includeonly`: `/api/v1/products?includeonly=type,slug,name`. Excluded fields with `api: false` or `api: 'editPermissionRequired'` if appropriate will not be displayed of course.
+Or you can require only specific fields in the GET request by adding the query filters `includeFields` and `excludeFields`.
 
-Example of a response to `/api/v1/products?includeonly=type,slug,excludedFieldInSchema`
+Examples:
+`/api/v1/products?includeFields=type,slug,name`
+`/api/v1/products?excludeFields=type,slug,name`
+
+It is useless to use both `includeFields` and `excludeFields` in the same query, as `includeFields` has the priority over `excludeFields`.
+
+Excluded fields with `api: false` or `api: 'editPermissionRequired'` if appropriate will not be displayed of course, even if added to `includeFields`.
+Example of a response to `/api/v1/products?includeFields=type,slug,excludedFieldInSchema`
 
 ```
 [
