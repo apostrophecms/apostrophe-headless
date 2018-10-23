@@ -1047,7 +1047,22 @@ describe('test apostrophe-headless', function() {
       assert(!err);
       assert(response);
       assert(response.results);
-      assert(typeof response.results[name] === 'undefined');
+      assert(typeof response.results[0][name] === 'undefined');
+      apos.modules.products.schema[0].api = true;
+      done();
+    });
+  }); 
+
+  it('can GET a product with only some fields but not excluded fields', function(done) {
+    apos.modules.products.schema[0].api = false;
+    var name = apos.modules.products.schema[0].name;
+    return http('/api/v1/products?includeonly=slug,type,'+name, 'GET', {}, {}, undefined, function(err, response) {
+      assert(!err);
+      assert(response);
+      assert(response.results);
+      assert(typeof response.results[0].slug === 'string');
+      assert(typeof response.results[0][name] === 'undefined');
+      assert(typeof response.results[0].published === 'undefined');
       apos.modules.products.schema[0].api = true;
       done();
     });
