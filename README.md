@@ -97,6 +97,8 @@ To call most filters from the public API, you will need to use the `safeFilters`
 }
 ```
 
+### Filtering fields
+
 You can restrict what fields to send by adding `api: false` to a specific schema field. If only users with editing permissions for the doc should see a specific field, you can pass the option `api: 'editPermissionRequired'`. 
 
 ```javascript
@@ -106,6 +108,28 @@ You can restrict what fields to send by adding `api: false` to a specific schema
   type: 'string',
   api: false
 }
+```
+
+Or you can require only specific fields in the GET request by adding the query filters `includeFields` and `excludeFields`.
+
+Examples:
+`/api/v1/products?includeFields=type,slug,name`
+`/api/v1/products?excludeFields=type,slug,name`
+
+It is useless to use both `includeFields` and `excludeFields` in the same query, as `includeFields` has the priority over `excludeFields`.
+
+Excluded fields with `api: false` or `api: 'editPermissionRequired'` if appropriate will not be displayed of course, even if added to `includeFields`.
+Example of a response to `/api/v1/products?includeFields=type,slug,excludedFieldInSchema`
+
+```
+[
+  {
+    _id: 'whatever_id',
+    type: 'product',
+    slug: 'product-key-product',
+    _originalWidgets: {}
+  }
+]
 ```
 
 ### Access as a logged-in user
