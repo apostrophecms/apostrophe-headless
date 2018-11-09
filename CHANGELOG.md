@@ -1,3 +1,7 @@
+## 2.5.0
+
+* You may now specify just certain fields to be fetched with `includeFields` in your query string, or exclude certain fields with `excludeFields`. Thanks to `falkodev`.
+
 ## 2.4.0
 
 * You may now exclude a field from the GET method of the API entirely by setting `api: false` in its schema field definition. You may also set `api: 'editPermissionRequired'` to restrict access to that field to those who can edit the doc in question. Thanks to Anthony Tarlao.
