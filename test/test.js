@@ -82,6 +82,28 @@ describe('test apostrophe-headless', function() {
                   type: 'string'
                 }
               ]
+            },
+            {
+              name: '_articles',
+              type: 'joinByArray',
+              filters: {
+                projection: {
+                  title: 1,
+                  slug: 1,
+                },
+              },
+              api: 'editPermissionRequired',
+            }
+          ]
+        },
+        articles: {
+          extend: 'apostrophe-pieces',
+          restApi: true,
+          name: 'article',
+          addFields: [
+            {
+              name: 'name',
+              type: 'string'
             }
           ]
         },
@@ -452,6 +474,37 @@ describe('test apostrophe-headless', function() {
     }, function(err, response) {
       assert(!err);
       done();
+    });
+  });
+
+  it('can insert a product with joins', function(done) {
+    http('/api/v1/articles', 'POST', { apiKey: 'skeleton-key' }, {
+      title: 'First Article',
+      name: 'first-article'
+    }, undefined, function(err, response) {
+      assert(!err);
+      var articleId = response._id;
+      assert(articleId);
+
+      http('/api/v1/products', 'POST', { apiKey: 'skeleton-key' }, {
+        title: 'Product Key Product With Join',
+        body: {
+          type: 'area',
+          items: [
+            {
+              type: 'apostrophe-rich-text',
+              id: cuid(),
+              content: '<p>This is the product key product with join</p>'
+            }
+          ]
+        },
+        articlesIds: [articleId], 
+      }, undefined, function(err, response) {
+        assert(!err);
+        assert(response._id);
+        assert(response.articlesIds[0] === articleId);
+        done();
+      });
     });
   });
 
@@ -1113,6 +1166,31 @@ describe('test apostrophe-headless', function() {
     });
   }); 
 
+  it('can GET a product without excluded joins', function(done) {
+    return http('/api/v1/products', 'GET', {}, {}, undefined, function(err, response) {
+      assert(!err);
+      assert(response);
+      assert(response.results);
+      var product = _.find(response.results, { slug: 'product-key-product-with-join' });
+      assert(typeof product['_articles'] === 'undefined');
+      done();
+    });
+  }); 
+
+  it('can GET a product with joins', function(done) {
+    var articleInSchema = _.find(apos.modules.products.schema, { name: '_articles' })
+    articleInSchema.api = true
+    return http('/api/v1/products', 'GET', {}, {}, undefined, function(err, response) {
+      assert(!err);
+      assert(response);
+      assert(response.results);
+      var product = _.find(response.results, { slug: 'product-key-product-with-join' });
+      assert(Array.isArray(product['_articles']));
+      assert(product['_articles'].length === 1);
+      articleInSchema.api = 'editPermissionRequired';
+      done();
+    });
+  }); 
 });
 
 function http(url, method, query, form, bearer, extra, callback) {
