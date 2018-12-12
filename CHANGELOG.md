@@ -1,3 +1,7 @@
+## 2.6.0
+
+* `includeFields` and `excludeFields` now work properly for joins. Thanks to Anthony Tarlao.
+
 ## 2.5.0
 
 * You may now specify just certain fields to be fetched with `includeFields` in your query string, or exclude certain fields with `excludeFields`. Thanks to `falkodev`.
