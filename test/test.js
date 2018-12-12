@@ -1177,6 +1177,19 @@ describe('test apostrophe-headless', function() {
     });
   }); 
 
+  it('can GET a product without excluded joins even if included in query', function(done) {
+    return http('/api/v1/products?includeFields=slug,type,_articles', 'GET', {}, {}, undefined, function(err, response) {
+      assert(!err);
+      assert(response);
+      assert(response.results);
+      var product = _.find(response.results, { slug: 'product-key-product-with-join' });
+      assert(typeof product.type === 'string');
+      assert(typeof product.slug === 'string');
+      assert(typeof product['_articles'] === 'undefined');
+      done();
+    });
+  }); 
+
   it('can GET a product with joins', function(done) {
     var articleInSchema = _.find(apos.modules.products.schema, { name: '_articles' })
     articleInSchema.api = true
@@ -1185,6 +1198,23 @@ describe('test apostrophe-headless', function() {
       assert(response);
       assert(response.results);
       var product = _.find(response.results, { slug: 'product-key-product-with-join' });
+      assert(Array.isArray(product['_articles']));
+      assert(product['_articles'].length === 1);
+      articleInSchema.api = 'editPermissionRequired';
+      done();
+    });
+  }); 
+
+  it('can GET a product with included joins', function(done) {
+    var articleInSchema = _.find(apos.modules.products.schema, { name: '_articles' })
+    articleInSchema.api = true
+    return http('/api/v1/products?includeFields=slug,type,_articles', 'GET', {}, {}, undefined, function(err, response) {
+      assert(!err);
+      assert(response);
+      assert(response.results);
+      var product = _.find(response.results, { slug: 'product-key-product-with-join' });
+      assert(typeof product.type === 'string');
+      assert(typeof product.slug === 'string');
       assert(Array.isArray(product['_articles']));
       assert(product['_articles'].length === 1);
       articleInSchema.api = 'editPermissionRequired';
