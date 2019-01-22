@@ -14,14 +14,8 @@ describe('test apostrophe-headless', function() {
 
   this.timeout(20000);
 
-  after(function(done) {
-    apos.db.dropDatabase(function(err) {
-      if (err) {
-        console.error(err);
-      }
-      fs.removeSync(__dirname + '/public/uploads/attachments');
-      done();
-    });
+   after(function(done) {
+    require('apostrophe/test-lib/util').destroy(apos, done);
   });
 
   it('initializes', function(done) {
