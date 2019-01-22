@@ -39,11 +39,12 @@ describe('test apostrophe-headless', function() {
         },
         'products': {
           extend: 'apostrophe-pieces',
-          restApi: true,
+          restApi: {
+            safeDistinct: [ '_articles' ]
+          },
           name: 'product',
           apiKeys: ['product-key' ],
           apiTemplates: [ 'fragment' ],
-          safeDistinct: [ '_articles' ],
           addFields: [
             {
               name: 'body',
@@ -1081,6 +1082,7 @@ describe('test apostrophe-headless', function() {
   });
 
   it('cannot GET a product when user has not the right permission', function(done) {
+    var saveRestApi = apos.modules.products.options.restApi;
     apos.modules.products.options.restApi = {
       getRequiresEditPermission: true
     }
@@ -1089,7 +1091,7 @@ describe('test apostrophe-headless', function() {
       assert(response);
       assert(response.results);
       assert(response.results.length === 0);
-      apos.modules.products.options.restApi = true;
+      apos.modules.products.options.restApi = saveRestApi;
       done();
     });
   }); 
@@ -1230,7 +1232,21 @@ describe('test apostrophe-headless', function() {
       assert(response.results);
       assert(response.distinct);
       assert(response.distinct._articles);
-      console.log(response.distinct._articles);
+      assert(response.distinct._articles[0].label === 'First Article');
+      done();
+    });
+  }); 
+
+  it('can GET results with distinct article join count information', function(done) {
+    return http('/api/v1/products?distinct-counts=_articles', 'GET', {}, {}, undefined, function(err, response) {
+      console.error(err);
+      assert(!err);
+      assert(response);
+      assert(response.results);
+      assert(response.distinct);
+      assert(response.distinct._articles);
+      assert(response.distinct._articles[0].label === 'First Article');
+      assert(response.distinct._articles[0].count === 1);
       done();
     });
   }); 

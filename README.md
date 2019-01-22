@@ -260,9 +260,7 @@ Once againwe can display the labels to our users, and if they pick one, send bac
 
 ### Adding counts for each distinct value
 
-Want to show the user how many items are tagged `Free` as part of your filter interface? You can do that by using `counts` in place of `distinct`. Keep in mind that the answer will still be in the `distinct` object; however, each choice will now have a `count` property in addition to `label` and `value`.
-
-> To be exact, `counts` implies `distinct`. You could specify `distinct=tags&count=tags`, but we've saved you the trouble.
+Want to show the user how many items are tagged `Free` as part of your filter interface? You can do that by using `distinct-counts` in place of `distinct`. Keep in mind that **the answer will still be in the `distinct` object**; however, each choice will now have a `count` property in addition to `label` and `value`.
 
 ### Distinct values for more than one filter
 
