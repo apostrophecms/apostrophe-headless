@@ -252,7 +252,7 @@ The response will look like:
 }
 ```
 
-Once againwe can display the labels to our users, and if they pick one, send back the value in the `_specialist` query parameter:
+Once again we can display the labels to our users, and if they pick one, send back the value in the `_specialist` query parameter:
 
 `/api/v1/products?_specialist=_cyyyy`
 
@@ -262,9 +262,58 @@ Once againwe can display the labels to our users, and if they pick one, send bac
 
 Want to show the user how many items are tagged `Free` as part of your filter interface? You can do that by using `distinct-counts` in place of `distinct`. Keep in mind that **the answer will still be in the `distinct` object**; however, each choice will now have a `count` property in addition to `label` and `value`.
 
+Example request:
+
+`/api/v1/products?distinct-counts=tags`
+
+Example response:
+
+```javascript
+{
+  results: [ ... pieces here ],
+  distinct: {
+    tags: [
+      {
+        label: 'Free',
+        value: 'Free',
+        count: 5
+      },
+      ... More tags here
+    ]
+  }
+}
+```
+
+
 ### Distinct values for more than one filter
 
 Yes, this is supported. Just use comma-separated field names when passing `distinct` or `counts` in your URL.
+
+For example, you might make this request:
+
+`/api/v1/products?distinct=_specialist,tags`
+
+In which case the `distinct` property of the response will have both `_specialist` and `tags` subproperties.
+
+Make sure both `_specialist` and `tags` are configured as `safeDistinct`:
+
+```javascript
+// in lib/modules/products/index.js
+
+'products': {
+  name: 'product',
+  extend: 'apostrophe-pieces',
+  addFields: [
+    {
+      type: 'joinByOne',
+      name: '_specialist'
+    }
+  ],
+  restApi: {
+    safeDistinct: [ '_specialist', 'tags' ]
+  }
+}
+```
 
 ### Access as a logged-in user
 
