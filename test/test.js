@@ -43,6 +43,7 @@ describe('test apostrophe-headless', function() {
           name: 'product',
           apiKeys: ['product-key' ],
           apiTemplates: [ 'fragment' ],
+          safeDistinct: [ '_articles' ],
           addFields: [
             {
               name: 'body',
@@ -1222,13 +1223,14 @@ describe('test apostrophe-headless', function() {
     });
   }); 
 
-  it('can GET five of those products without a bearer token', function(done) {
-    return http('/api/v1/products', 'GET', {}, {}, undefined, function(err, response) {
+  it('can GET results with distinct article join information', function(done) {
+    return http('/api/v1/products?distinct=_articles', 'GET', {}, {}, undefined, function(err, response) {
       assert(!err);
       assert(response);
       assert(response.results);
-      console.log(response.results);
-      assert(response.results.length === 5);
+      assert(response.distinct);
+      assert(response.distinct._articles);
+      console.log(response.distinct._articles);
       done();
     });
   }); 
