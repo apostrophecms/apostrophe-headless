@@ -1,3 +1,9 @@
+## 2.7.0
+
+* `distinct` and `distinct-counts` query parameters added. You must also configure `safeDistinct`.
+
+Thanks to Michelin for making this work possible via [Apostrophe Enterprise Support](https://apostrophecms.org/support/enterprise-support).
+
 ## 2.6.0
 
 * `includeFields` and `excludeFields` now work properly for joins. Thanks to Anthony Tarlao.
