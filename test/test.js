@@ -1221,6 +1221,18 @@ describe('test apostrophe-headless', function() {
       done();
     });
   }); 
+
+  it('can GET five of those products without a bearer token', function(done) {
+    return http('/api/v1/products', 'GET', {}, {}, undefined, function(err, response) {
+      assert(!err);
+      assert(response);
+      assert(response.results);
+      console.log(response.results);
+      assert(response.results.length === 5);
+      done();
+    });
+  }); 
+
 });
 
 function http(url, method, query, form, bearer, extra, callback) {

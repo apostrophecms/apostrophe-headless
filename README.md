@@ -97,6 +97,8 @@ To call most filters from the public API, you will need to use the `safeFilters`
 }
 ```
 
+> You may filter `joinByOne` and `joinByArray` fields, as long as they are listed in `safeFilters`. When doing so pass the `_id` property. Alternatively, leave the leading `_` off the field name and pass the `slug` property.
+
 ### Filtering fields for all requests
 
 You can restrict what fields to send by adding `api: false` to a specific schema field. If only users with editing permissions for the doc should see a specific field, you can pass the option `api: 'editPermissionRequired'`. 
@@ -149,6 +151,122 @@ The response will contain everything *except* `type`, `slug` and `name`.
 > It is useless to use both `includeFields` and `excludeFields` in the same query, as `includeFields` has priority over `excludeFields`. This is due to the way MongoDB projections work.
 
 If there is any conflict between the `api` schema field option above and the `includeFields` option, the `api` schema field option takes priority.
+
+## Retrieving distinct tags, joins, etc. to populate your filters
+
+In addition to fetching actual pieces, you can obtain information about the distinct tags that may exist on those pieces, as well as information about the distinct objects that are joined to them.
+
+This is useful to populate your filters. For instance, to allow the user to filter the results by tag **without prefetching every result in the database to scan for tags**, you must know what tags exist.
+
+To add information about distinct tags to the response, first configure your module to allow it:
+
+```javascript
+// in lib/modules/products/index.js
+'products': {
+  extend: 'apostrophe-pieces',
+  name: 'product',
+  restApi: {
+    safeDistinct: [ 'tags' ]
+  }
+}
+```
+
+> Without `safeDistinct`, developers would be able to cause a denial of service by requesting all distinct values at once for fields like `_id` that are always different.
+
+Now, you may access URLs like this:
+
+`/api/v1/products?distinct=tags`
+
+The response will look like:
+
+```javascript
+{
+  results: [ ... pieces here ],
+  distinct: {
+    tags: [ 
+      {
+        label: 'Free',
+        value: 'Free'
+      },
+      {
+        label: 'Paid',
+        value: 'Paid'
+      }
+    ]
+  }
+}
+```
+
+Now we can display the labels to our users, and if they pick one, send back the value in the `tags` query parameter:
+
+`/api/v1/products?tags=Paid`
+
+**Since the distinct values are intended for use as filters, use of `safeDistinct` implies `safeFilter` as well.** You don't have to specify both for the same filter.
+
+> You can pass multiple values for `tags`, with or without the familiar `[]`, syntax, for example: `tags[]=one&tags[]=two`
+> You'll get results that include at least one of the tags.
+
+### Distinct values for joins
+
+Now let's assume there is a `joinByOne` schema field called `_specialist` that joins our `product` piece with a `specialist` piece. We can fetch distinct values here too. In this case, the `value` property will be the `_id`:
+
+```javascript
+// in lib/modules/products/index.js
+
+'products': {
+  name: 'product',
+  extend: 'apostrophe-pieces',
+  addFields: [
+    {
+      type: 'joinByOne',
+      name: '_specialist'
+    }
+  ],
+  restApi: {
+    safeDistinct: [ '_specialist' ]
+  }
+}
+```
+
+Then we can access:
+
+`/api/v1/products?distinct=_specialist`
+
+The response will look like:
+
+```javascript
+{
+  results: [ ... pieces here ],
+  distinct: {
+    _specialist: [ 
+      {
+        label: 'Jane Doe',
+        value: '_cyyyy'
+      },
+      {
+        label: 'Joe Smith',
+        value: '_czzzz'
+      }
+    ]
+  }
+}
+```
+
+Once againwe can display the labels to our users, and if they pick one, send back the value in the `_specialist` query parameter:
+
+`/api/v1/products?_specialist=_cyyyy`
+
+> We send the value, NOT the label. Again, you can send more than one by passing more than one `_specialist` query parameter. You'll get results that include at least one of the specialists.
+
+### Adding counts for each distinct value
+
+Want to show the user how many items are tagged `Free` as part of your filter interface? You can do that by using `counts` in place of `distinct`. Keep in mind that the answer will still be in the `distinct` object; however, each choice will now have a `count` property in addition to `label` and `value`.
+
+> To be exact, `counts` implies `distinct`. You could specify `distinct=tags&count=tags`, but we've saved you the trouble.
+
+### Distinct values for more than one filter
+
+Yes, this is supported. Just use comma-separated field names when passing `distinct` or `counts` in your URL.
 
 ### Access as a logged-in user
 
