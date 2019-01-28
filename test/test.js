@@ -1233,7 +1233,6 @@ describe('test apostrophe-headless', function() {
 
   it('can GET results with distinct article join count information', function(done) {
     return http('/api/v1/products?distinct-counts=_articles', 'GET', {}, {}, undefined, function(err, response) {
-      console.error(err);
       assert(!err);
       assert(response);
       assert(response.results);
@@ -1243,7 +1242,55 @@ describe('test apostrophe-headless', function() {
       assert(response.distinct._articles[0].count === 1);
       done();
     });
-  }); 
+  });
+
+  it('can patch a join', function(done) {
+    http('/api/v1/articles', 'POST', { apiKey: 'skeleton-key' }, {
+      title: 'Join Article',
+      name: 'join-article'
+    }, undefined, function(err, response) {
+      assert(!err);
+      var articleId = response._id;
+      assert(articleId);
+
+      http('/api/v1/products', 'POST', { apiKey: 'skeleton-key' }, {
+        title: 'Initially No Join Value',
+        body: {
+          type: 'area',
+          items: [
+            {
+              type: 'apostrophe-rich-text',
+              id: cuid(),
+              content: '<p>This is the product key product without initial join</p>'
+            }
+          ]
+        },
+      }, undefined, function(err, response) {
+        assert(!err);
+        var product = response;
+        assert(product._id);
+        http('/api/v1/products/' + product._id, 'PATCH', { apiKey: 'skeleton-key' }, {
+          title: 'Initially No Join Value',
+          body: {
+            type: 'area',
+            items: [
+              {
+                type: 'apostrophe-rich-text',
+                id: cuid(),
+                content: '<p>This is the product key product without initial join</p>'
+              }
+            ]
+          },
+          articlesIds: [articleId], 
+        }, undefined, function(err, response) {
+          assert(!err);
+          assert(response.articlesIds);
+          assert(response.articlesIds[0] === articleId);
+          done();
+        });
+      });
+    });
+  });
 
 });
 
