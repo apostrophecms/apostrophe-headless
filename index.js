@@ -366,7 +366,13 @@ module.exports = {
     };
 
     self.subsetSchemaForPatch = function(schema, doc) {
-      return self.apos.schemas.subset(schema, _.keys(doc).concat(operatorKeys()));
+      var idFields = {};
+      schema.forEach(function(field) {
+        if ((field.type === 'joinByOne') || (field.type === 'joinByArray')) {
+          idFields[field.idField || field.idsField] = field.name;
+        }
+      });
+      return self.apos.schemas.subset(schema, _.map(_.keys(doc).concat(operatorKeys()), idFieldToSchemaField));
       function operatorKeys() {
         return _.uniq(_.flatten(
           _.map([ '$push', '$pullAll', '$pullAllById' ], function(o) {
@@ -376,7 +382,9 @@ module.exports = {
           })
         ));
       }
-
+      function idFieldToSchemaField(name) {
+        return idFields[name] || name;
+      }
     }
 
   }
