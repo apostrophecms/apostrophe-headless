@@ -1,3 +1,8 @@
+## 2.7.1
+
+* The `PATCH` method works properly with `joinByOne` and `joinByArray`. You should send the appropriate `idField` or `idsField`. If these are not explicitly configured, the names map as follows: `_joinName` maps to `joinNameIdField` or `joinNameIdsField` (note there is no `_`), depending on whether it is a `joinByOne` or `joinByArray` field. Thanks to Giuseppe Monteleone for flagging the issue.
+* In certain cases, a crash occurred when attempting to report a 500 error to the browser. Thanks to Giuseppe Monteleone for fixing the issue.
+
 ## 2.7.0
 
 * `distinct` and `distinct-counts` query parameters added. You must also configure `safeDistinct`.
