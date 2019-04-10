@@ -2,6 +2,7 @@
 
 * Various tickets have been opened due to confusion around what happens if you use `includeFields` or `excludeFields` and, as a result, you do not include the following fields: `type`, `_id`, `tags`, `slug` and `docPermissions`. This can lead to the unexpected failure of joins, the unexpected absence of the `_url` property (or a bad value for that property), and the unexpected absence of the `_edit: true` property. This release fixes this issue by always including these fields in the MongoDB query, but excluding them after the fact in the returned array of results if they are present in `excludeFields`.
 * The current `page` property is always included in the response when fetching pieces.
+* eslint added to the tests, passes the apostrophe eslint config.
 
 ## 2.7.1
 

@@ -18,12 +18,12 @@ module.exports = {
     }
     return self.enableCollection(callback);
   },
-  
+
   construct: function(self, options) {
 
     self.endpoint = '/api/v' + (options.version || 1);
     self.registeredModules = [];
-        
+
     // Exclude the REST APIs from CSRF protection. However,
     // this module will call the CSRF protection middleware
     // itself if a user is not present based on a bearer token
@@ -36,11 +36,11 @@ module.exports = {
       self.bearerTokensCollection = self.apos.db.collection('aposBearerTokens');
       return self.bearerTokensCollection.ensureIndex({ expires: 1 }, { expireAfterSeconds: 0 }, callback);
     };
-    
+
     self.enableCorsHeaders = function() {
       self.apos.app.use(self.endpoint, cors());
     };
-    
+
     self.addRoutes = function() {
 
       self.enableCorsHeaders();
@@ -55,7 +55,7 @@ module.exports = {
             insertToken
           ], function(err) {
             if (err) {
-              return res.status((typeof(err) !== 'object') ? err : 500).send({ 'error': 'error' });
+              return res.status((typeof (err) !== 'object') ? err : 500).send({ 'error': 'error' });
             } else {
               return res.send({ bearer: bearer });
             }
@@ -124,7 +124,7 @@ module.exports = {
         }
         return self.apos.attachments.accept(req, file, function(err, file) {
           if (err) {
-            console.error(err);
+            self.apos.utils.error(err);
             return res.status(500).send({ status: 'error' });
           }
           return res.send(file);
@@ -139,12 +139,12 @@ module.exports = {
       }
       return self.apos.modules['apostrophe-express'].csrfWithoutExceptions(req, res, next);
     };
-    
+
     // Instantiate the express-bearer-token middleware for use
     // in parsing bearer tokens. Configuration may be passed to it via
     // the `expressBearerToken` option.
     self.bearerTokenMiddleware = expressBearerToken(self.options.expressBearerToken || {});
-    
+
     // The `bearerMiddleware` method is Express middleware
     // that detects a bearer token per RFC6750 and
     // sets `req.user` exactly as the `apostrophe-login`
@@ -157,7 +157,7 @@ module.exports = {
     // Apostrophe's standard CSRF middleware is invoked
     // to ensure that API accesses by logged-in website users
     // are not vulnerable to CSRF attacks.
-    
+
     self.bearerMiddleware = function(req, res, next) {
       if (req.url.substr(0, self.endpoint.length + 1) !== (self.endpoint + '/')) {
         return next();
@@ -166,7 +166,7 @@ module.exports = {
         // Login is exempt, chicken and egg
         return next();
       }
-      
+
       self.bearerTokenMiddleware(req, res, function() {
         var userId, user;
         if (!req.token) {
@@ -177,7 +177,7 @@ module.exports = {
           deserializeUser
         ], function(err) {
           if (err) {
-            console.error(err);
+            self.apos.utils.error(err);
             return res.status(500).send({ 'error': 'error' });
           }
           if (!user) {
@@ -187,7 +187,7 @@ module.exports = {
           req.user = user;
           return next();
         });
-        
+
         function getBearer(callback) {
           // The expireAfterSeconds feature of mongodb
           // is not instantaneous so we should check
@@ -223,7 +223,7 @@ module.exports = {
     self.registerModule = function(module) {
       self.registeredModules.push(module);
     };
-    
+
     self.apiKeyMiddleware = function(req, res, next) {
 
       if (req.url.substr(0, self.endpoint.length + 1) !== (self.endpoint + '/')) {
@@ -231,12 +231,13 @@ module.exports = {
       }
 
       var key = req.query.apikey || req.query.apiKey || getAuthorizationApiKey();
+      var taskReq;
       if (!key) {
         return next();
       }
 
       if (_.includes(self.options.apiKeys, key)) {
-        var taskReq = self.apos.tasks.getReq();
+        taskReq = self.apos.tasks.getReq();
         req.user = taskReq.user;
         req.csrfExempt = true;
         return next();
@@ -245,7 +246,7 @@ module.exports = {
           return _.includes(module.options.apiKeys, key);
         });
         if (module) {
-          var taskReq = self.apos.tasks.getReq();
+          taskReq = self.apos.tasks.getReq();
           req.user = taskReq.user;
           req.user._permissions = { 'edit-attachment': true };
           // TODO this check would be better factored as a method
@@ -277,7 +278,7 @@ module.exports = {
     };
 
     // Given a module and API result object so far, render the doc
-    // with the appropriate `api/` template of that module. 
+    // with the appropriate `api/` template of that module.
     // The template is called with `data.page` or `data.piece`
     // beig available depending on whether `name` is `page` or `piece`.
 
@@ -319,7 +320,7 @@ module.exports = {
           if (key === '_edit') {
             doc[key] = false;
           }
-          if (typeof(val) === 'object') {
+          if (typeof (val) === 'object') {
             removeEditFlags(val);
           }
         }
@@ -385,7 +386,7 @@ module.exports = {
       function idFieldToSchemaField(name) {
         return idFields[name] || name;
       }
-    }
+    };
 
   }
 

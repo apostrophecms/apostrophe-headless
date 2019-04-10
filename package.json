@@ -4,7 +4,7 @@
   "description": "Use Apostrophe as a headless CMS with REST APIs for your apps",
   "main": "index.js",
   "scripts": {
-    "test": "mocha test/test.js"
+    "test": "eslint . && mocha test/test.js"
   },
   "repository": {
     "type": "git",
@@ -14,7 +14,9 @@
     "apostrophecms",
     "apostrophe",
     "rest",
-    "api"
+    "api",
+    "apostrophe-cms",
+    "cms"
   ],
   "author": "P'unk Avenue LLC",
   "license": "MIT",
@@ -33,6 +35,13 @@
     "apostrophe": "^2.0.0",
     "fs-extra": "^4.0.2",
     "mocha": "^5.2.0",
-    "request": "^2.83.0"
+    "request": "^2.83.0",
+    "eslint-config-apostrophe": "^2.0.2",
+    "eslint": "^4.15.0",
+    "eslint-config-standard": "^11.0.0-beta.0",
+    "eslint-plugin-import": "^2.16.0",
+    "eslint-plugin-node": "^5.2.1",
+    "eslint-plugin-promise": "^3.6.0",
+    "eslint-plugin-standard": "^3.0.1"
   }
 }
