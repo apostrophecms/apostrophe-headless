@@ -61,6 +61,13 @@ You can also pass options for the REST API:
 
 > All of the documentation below discusses the `products` example above. Of course you may also configure the `restApi` option for other modules that extend pieces.
 
+## Workflow support
+
+When used in the presence of the `apostrophe-workflow`, this module currently only supports GET requests. When making GET requests, you must specify the locale name of interest using the `_workflowLocale` query parameter, otherwise you will get results for the default locale only.
+
+Note that this is not an issue if the document type in question is excluded from workflow via `excludeTypes`.
+
+
 ## Retrieving all the products
 
 Now your app can access:
