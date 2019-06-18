@@ -1,3 +1,7 @@
+## 2.9.1
+
+* The `csrf: exceptions` option to `apostrophe-express` now works properly in the presence of this module.
+
 ## 2.9.0
 
 * Basic support for combining apostrophe-workflow with this module. GET requests now succeed as expected when the `_workflowLocale` query parameter is used to specify the desired locale. Otherwise, as before, you receive content for the default locale only. Note that you can only obtain live content, not draft content. POST, PUT and PATCH requests currently are not fully supported with workflow. Note that there is no issue if the doc type in question is excluded from workflow via `excludeTypes`. It is our intention to provide more complete support for headless workflow over time.

@@ -106,7 +106,7 @@ module.exports = {
         self.apos.app.use(self.apiKeyMiddleware);
       }
 
-      self.apos.app.use(self.applyCsrfUnlessExemptMiddleware);
+      self.apos.app.use(self.endpoint, self.applyCsrfUnlessExemptMiddleware);
 
       self.apos.app.post(self.endpoint + '/attachments', self.apos.attachments.middleware.canUpload, self.apos.middleware.files, function(req, res) {
         var userAgent = req.headers['user-agent'];
