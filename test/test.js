@@ -25,7 +25,10 @@ describe('test apostrophe-headless', function() {
       modules: {
         'apostrophe-express': {
           secret: 'xxx',
-          port: 7900
+          port: 7900,
+          csrf: {
+            exceptions: '/excepted-post-route'
+          }
         },
         'apostrophe-headless': {
           bearerTokens: true,
@@ -1296,6 +1299,25 @@ describe('test apostrophe-headless', function() {
       }
     }, bearer, function(err, response) {
       assert(err);
+      done();
+    });
+  });
+
+  it('can POST to a CSRF excepted custom route', function(done) {
+    http('/excepted-post-route', 'POST', {}, {
+      test: 'test'
+    }, undefined, function(err, response) {
+      assert(!err);
+      assert(response === 'ok');
+      done();
+    });
+  });
+
+  it('cannot POST to a non-CSRF-excepted custom route', function(done) {
+    http('/non-excepted-post-route', 'POST', {}, {
+      test: 'test'
+    }, undefined, function(err, response) {
+      assert(err && (err.status === 403));
       done();
     });
   });
