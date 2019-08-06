@@ -476,6 +476,8 @@ describe('test apostrophe-headless', function() {
     });
   });
 
+  var joinedProductId;
+
   it('can insert a product with joins', function(done) {
     http('/api/v1/articles', 'POST', { apiKey: 'skeleton-key' }, {
       title: 'First Article',
@@ -502,6 +504,7 @@ describe('test apostrophe-headless', function() {
         assert(!err);
         assert(response._id);
         assert(response.articlesIds[0] === articleId);
+        joinedProductId = response._id;
         done();
       });
     });
@@ -1151,6 +1154,16 @@ describe('test apostrophe-headless', function() {
       assert(typeof product.type === 'string');
       assert(typeof product.slug === 'string');
       assert(typeof product['_articles'] === 'undefined');
+      done();
+    });
+  });
+
+  it('can GET a single product but not its joins when excluded', function(done) {
+    return http('/api/v1/products/' + joinedProductId, 'GET', {}, {}, undefined, function(err, response) {
+      assert(!err);
+      assert(response);
+      assert(response.slug === 'product-key-product-with-join');
+      assert(!response._articles);
       var articleInSchema = _.find(apos.modules.products.schema, { name: '_articles' });
       articleInSchema.api = true;
       done();
@@ -1165,6 +1178,16 @@ describe('test apostrophe-headless', function() {
       var product = _.find(response.results, { slug: 'product-key-product-with-join' });
       assert(Array.isArray(product['_articles']));
       assert(product['_articles'].length === 1);
+      done();
+    });
+  });
+
+  it('can GET a single product with joins', function(done) {
+    return http('/api/v1/products/' + joinedProductId, 'GET', {}, {}, undefined, function(err, response) {
+      assert(!err);
+      assert(response);
+      assert(response._articles);
+      assert(response._articles.length === 1);
       done();
     });
   });

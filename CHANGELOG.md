@@ -1,3 +1,7 @@
+## 2.9.2
+
+* Fetches of a single piece (`GET /pieces/ID`) now respect excluded fields and `editPermissionRequired` in the same way that `GET /pieces` already did.
+
 ## 2.9.1
 
 * The `csrf: exceptions` option to `apostrophe-express` now works properly in the presence of this module.
