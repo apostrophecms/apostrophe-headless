@@ -1,3 +1,7 @@
+## 2.9.4
+
+* Make sure the slug follows the title when inserting a piece even if the slug is not explicitly POSTed.
+
 ## 2.9.3
 
 * Fix issue introduced in apostrophe 2.102.0 where newly inserted pieces are unpublished, etc. You must update both this module and `apostrophe` to get the benefit of this fix.
