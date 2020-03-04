@@ -903,6 +903,7 @@ describe('test apostrophe-headless', function() {
     http('/api/v1/apostrophe-pages/' + newPage._id, 'PUT', { apiKey: 'page-key' }, newPage, undefined, function(err, response) {
       assert(!err);
       assert(response.title === 'Tab One Child Three Modified');
+      assert(response.published);
       done();
     });
   });
