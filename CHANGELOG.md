@@ -1,3 +1,7 @@
+## 2.9.3
+
+* Fix issue introduced in apostrophe 2.102.0 where newly inserted pieces are unpublished, etc. You must update both this module and `apostrophe` to get the benefit of this fix.
+
 ## 2.9.2
 
 * Fetches of a single piece (`GET /pieces/ID`) now respect excluded fields and `editPermissionRequired` in the same way that `GET /pieces` already did.
