@@ -1,3 +1,8 @@
 {
-  "extends": "apostrophe"
+  "extends": "apostrophe",
+  "ignorePatterns": [
+    "node_modules/",
+    "**/node_modules/",
+    "test/public/modules/"
+  ]
 }

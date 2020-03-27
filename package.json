@@ -35,7 +35,7 @@
   "devDependencies": {
     "apostrophe": "^2.105.0",
     "apostrophe-workflow": "^2.19.0",
-    "eslint": "^4.15.0",
+    "eslint": "^6.0.0",
     "eslint-config-apostrophe": "^3.1.0",
     "eslint-config-standard": "^11.0.0-beta.0",
     "eslint-plugin-import": "^2.16.0",
