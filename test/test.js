@@ -206,7 +206,10 @@ describe('test apostrophe-headless', function() {
   });
 
   it('can locate the admin group', function(done) {
-    return apos.docs.db.findOne({ title: 'admin', type: 'apostrophe-group' }, function(err, group) {
+    return apos.docs.db.findOne({
+      title: 'admin',
+      type: 'apostrophe-group'
+    }, function(err, group) {
       assert(!err);
       assert(group);
       adminGroup = group;
@@ -348,7 +351,10 @@ describe('test apostrophe-headless', function() {
   var firstId;
 
   it('can GET only 5 if perPage is 5', function(done) {
-    http('/api/v1/products', 'GET', { perPage: 5, published: 'any' }, {}, bearer, function(err, response) {
+    http('/api/v1/products', 'GET', {
+      perPage: 5,
+      published: 'any'
+    }, {}, bearer, function(err, response) {
       assert(!err);
       assert(response);
       assert(response.results);
@@ -360,7 +366,11 @@ describe('test apostrophe-headless', function() {
   });
 
   it('can GET a different 5 on page 2', function(done) {
-    http('/api/v1/products', 'GET', { perPage: 5, published: 'any', page: 2 }, {}, bearer, function(err, response) {
+    http('/api/v1/products', 'GET', {
+      perPage: 5,
+      published: 'any',
+      page: 2
+    }, {}, bearer, function(err, response) {
       assert(!err);
       assert(response);
       assert(response.results);
@@ -845,7 +855,10 @@ describe('test apostrophe-headless', function() {
   });
 
   it('can get the entire page tree with an api key', function(done) {
-    return http('/api/v1/apostrophe-pages', 'GET', { all: 1, apiKey: 'page-key' }, {}, undefined, function(err, response) {
+    return http('/api/v1/apostrophe-pages', 'GET', {
+      all: 1,
+      apiKey: 'page-key'
+    }, {}, undefined, function(err, response) {
       assert(!err);
       assert(response);
       assert(response.slug === '/');
@@ -860,7 +873,11 @@ describe('test apostrophe-headless', function() {
   });
 
   it('can get the entire page tree as a flat array with an api key', function(done) {
-    return http('/api/v1/apostrophe-pages', 'GET', { all: 1, flat: 1, apiKey: 'page-key' }, {}, undefined, function(err, response) {
+    return http('/api/v1/apostrophe-pages', 'GET', {
+      all: 1,
+      flat: 1,
+      apiKey: 'page-key'
+    }, {}, undefined, function(err, response) {
       assert(!err);
       assert(response);
       assert(response.length);
@@ -926,7 +943,10 @@ describe('test apostrophe-headless', function() {
   });
 
   it('page tree reflects move of child to be grandchild', function(done) {
-    return http('/api/v1/apostrophe-pages', 'GET', { all: 1, apiKey: 'page-key' }, {}, undefined, function(err, response) {
+    return http('/api/v1/apostrophe-pages', 'GET', {
+      all: 1,
+      apiKey: 'page-key'
+    }, {}, undefined, function(err, response) {
       assert(!err);
       assert(response);
       assert(response.slug === '/');
@@ -1045,7 +1065,10 @@ describe('test apostrophe-headless', function() {
   });
 
   it('can render a page', function(done) {
-    http('/api/v1/apostrophe-pages/' + tabTwoId, 'GET', { render: 'fragment', apiKey: 'page-key' }, {
+    http('/api/v1/apostrophe-pages/' + tabTwoId, 'GET', {
+      render: 'fragment',
+      apiKey: 'page-key'
+    }, {
       targetId: tabTwoId,
       position: 'inside'
     }, undefined, function(err, response) {
@@ -1369,7 +1392,10 @@ function http(url, method, query, form, bearer, extra, callback) {
       return callback(err);
     }
     if (response.statusCode >= 400) {
-      return callback({ status: response.statusCode, body: body });
+      return callback({
+        status: response.statusCode,
+        body: body
+      });
     }
     return callback(null, body);
   });

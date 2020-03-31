@@ -1,3 +1,5 @@
+[![CircleCI](https://circleci.com/gh/apostrophecms/apostrophe-headless/tree/master.svg?style=svg)](https://circleci.com/gh/apostrophecms/apostrophe-headless/tree/master)
+
 ## Apostrophe as a headless CMS
 
 [Apostrophe](http://apostrophecms.org) is great for building websites, but many projects these days just need a "headless" CMS: an easy way to create new content types by defining schemas and immediately have a friendly interface for managing them on the back end... and REST APIs on the front end for React, React Native and other frontend frameworks to talk to.
@@ -74,7 +76,7 @@ Now your app can access:
 
 `/api/v1/products`
 
-To get the first page of products (50 per page, unless `maxPerPage` is adjusted as shown above). The response is JSON. See the `results` property for an array of products included in the first page, and the `pages` property for the total number of pages. 
+To get the first page of products (50 per page, unless `maxPerPage` is adjusted as shown above). The response is JSON. See the `results` property for an array of products included in the first page, and the `pages` property for the total number of pages.
 
 If you want to fetch a second page of products:
 
@@ -108,7 +110,7 @@ To call most filters from the public API, you will need to use the `safeFilters`
 
 ### Filtering fields for all requests
 
-You can restrict what fields to send by adding `api: false` to a specific schema field. If only users with editing permissions for the doc should see a specific field, you can pass the option `api: 'editPermissionRequired'`. 
+You can restrict what fields to send by adding `api: false` to a specific schema field. If only users with editing permissions for the doc should see a specific field, you can pass the option `api: 'editPermissionRequired'`.
 
 ```javascript
 {
@@ -190,7 +192,7 @@ The response will look like:
 {
   results: [ ... pieces here ],
   distinct: {
-    tags: [ 
+    tags: [
       {
         label: 'Free',
         value: 'Free'
@@ -245,7 +247,7 @@ The response will look like:
 {
   results: [ ... pieces here ],
   distinct: {
-    _specialist: [ 
+    _specialist: [
       {
         label: 'Jane Doe',
         value: '_cyyyy'
@@ -353,12 +355,12 @@ But for those who need to create and manage content via REST too... read on!
 ## Invoking REST APIs as a logged-in user of your Apostrophe site
 
 If you're building a React app or similar that is part of a webpage delivered by your Apostrophe site, and the right user is already logged into the site, then the APIs will automatically "see" the user and run with the right permissions. However, see the note that follows re: CSRF protection.
- 
+
 > If this doesn't sound relevant to your project, skip ahead to learn how to use API keys and bearer tokens instead. We've got your back, headless horseman.
 
 ## CSRF protection and logged-in users
 
-**If an API request comes from an Apostrophe user who logged in conventionally via the website,** and not via the REST login APIs below, then Apostrophe will check for CSRF (Cross-Site Request Forgery) attacks. 
+**If an API request comes from an Apostrophe user who logged in conventionally via the website,** and not via the REST login APIs below, then Apostrophe will check for CSRF (Cross-Site Request Forgery) attacks.
 
 If your API request is being sent by jQuery as provided by Apostrophe, you're good to go: Apostrophe automatically adds the necessary header.
 
@@ -491,7 +493,7 @@ With `username` and `password` properties in the body.
 Where `nnnn` should be replaced with the value of the `bearer` property you received.
 
 There is **no need to pass the XSRF header** when using a valid bearer token because bearer tokens are never part of an Apostrophe session.
- 
+
 5. If you receive a `401 Unauthorized` response to a later API request, consider making another `login` call to obtain a new bearer token. The expiration of bearer tokens depends on the `expires` setting as shown earlier.
 
 6. If the user logs out of your app, send a POST request as follows:
@@ -932,7 +934,7 @@ Ordinarily, the API simply returns the content of the page or piece as a JSON da
 
 ### Rendering a full page experience
 
-If you just want the full page representation of a page or piece, rendered as Apostrophe would normally do it, use the API to fetch information about that page or piece, and then separately request the URL in its `._url` property. 
+If you just want the full page representation of a page or piece, rendered as Apostrophe would normally do it, use the API to fetch information about that page or piece, and then separately request the URL in its `._url` property.
 
 > If you make that request from a browser, it will be detected as an AJAX (“xhr”) request, and the outermost markup of the page (styles, script tags, etc.) will not be returned, just the portion inside the div with the `apos-refreshable` class. You can also get this effect in a non-browser request by setting the `apos_refresh=1` query parameter. Otherwise the page is fully rendered, including assets.
 

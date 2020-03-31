@@ -144,7 +144,10 @@ function http(url, method, query, form, bearer, extra) {
         return callback(err);
       }
       if (response.statusCode >= 400) {
-        return callback({ status: response.statusCode, body: body });
+        return callback({
+          status: response.statusCode,
+          body: body
+        });
       }
       return callback(null, body);
     });
