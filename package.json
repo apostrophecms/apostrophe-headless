@@ -1,14 +1,14 @@
 {
   "name": "apostrophe-headless",
-  "version": "2.9.4",
+  "version": "2.9.5",
   "description": "Use Apostrophe as a headless CMS with REST APIs for your apps",
   "main": "index.js",
   "scripts": {
-    "test": "eslint . && mocha"
+    "test": "npx eslint . && mocha"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/punkave/apostrophe-headless.git"
+    "url": "git+https://github.com/apostrophecms/apostrophe-headless.git"
   },
   "keywords": [
     "apostrophecms",
@@ -16,14 +16,15 @@
     "rest",
     "api",
     "apostrophe-cms",
-    "cms"
+    "headless",
+    "headless-cms"
   ],
-  "author": "P'unk Avenue LLC",
+  "author": "ApostropheCMS",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/punkave/apostrophe-headless/issues"
+    "url": "https://github.com/apostrophecms/apostrophe-headless/issues"
   },
-  "homepage": "https://github.com/punkave/apostrophe-headless#readme",
+  "homepage": "https://github.com/apostrophecms/apostrophe-headless#readme",
   "dependencies": {
     "async": "^2.5.0",
     "bluebird": "^3.5.4",

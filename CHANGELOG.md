@@ -1,3 +1,7 @@
+## 2.9.5
+
+* Updates the ESLint configuration to `eslint-config-apostrophe@3.10` and fixes linter errors.
+
 ## 2.9.4
 
 * Make sure the slug follows the title when inserting a piece even if the slug is not explicitly POSTed.
