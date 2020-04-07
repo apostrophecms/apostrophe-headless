@@ -19,7 +19,7 @@
     "headless",
     "headless-cms"
   ],
-  "author": "ApostropheCMS",
+  "author": "Apostrophe Technologies, Inc.",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/apostrophecms/apostrophe-headless/issues"
