@@ -833,6 +833,17 @@ describe('test apostrophe-headless', function() {
     });
   });
 
+  it('can exclude children from the response with a parameter', function(done) {
+    return http('/api/v1/apostrophe-pages?children=false', 'GET', {}, {}, undefined, function(err, response) {
+      assert(!err);
+      assert(response);
+      assert(response.slug === '/');
+      assert(!response._children);
+      assert(response._ancestors);
+      done();
+    });
+  });
+
   it('can get an individual page by id, with its children', function(done) {
     return http('/api/v1/apostrophe-pages/' + tabOneId, 'GET', {}, {}, undefined, function(err, response) {
       assert(!err);
@@ -843,6 +854,17 @@ describe('test apostrophe-headless', function() {
       assert(response._children[0].title === 'Tab One Child One');
       assert(response._children[1].title === 'Tab One Child Two');
       assert(!(response._children[0]._children && response._children[0]._children.length));
+      done();
+    });
+  });
+
+  it('can exclude ancestors from the response with a parameter', function(done) {
+    return http('/api/v1/apostrophe-pages/' + tabOneId + '?ancestors=false', 'GET', {}, {}, undefined, function(err, response) {
+      assert(!err);
+      assert(response);
+      assert(response.slug === '/tab-one');
+      assert(response._children);
+      assert(!response._ancestors);
       done();
     });
   });
