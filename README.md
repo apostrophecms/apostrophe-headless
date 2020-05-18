@@ -834,6 +834,8 @@ To get information about the home page and its children. The response is a singl
 
 Basic information about the top-level children of the home page (aka the "tabs" of your site) is available in the `_children` property of the returned object. This property is an array. Each element has, at a minimum, `_id`, `title`, `type` and `slug` properties.
 
+By default, the `_children` property always exists. It may be empty. You can disable this property for a smaller response by including the query parameter, `children=false`.
+
 ### Fetching detailed information about one page
 
 Armed with the `_id`, you can obtain detailed information about a page by making a separate API request:
@@ -844,12 +846,11 @@ A page returned in this way will in turn offer its own `_children` property.
 
 This response will include schema fields, areas, etc. in the same detail as it would when requesting a piece.
 
-*The `_children` property always exists. It may be empty.*
-
-
 ### Accessing ancestor pages
 
 Pages also have an `_ancestors` array. This functions similarly to the `_children` array. The first entry is the home page, and the last entry is the immediate parent of the page in question.
+
+By default, the `_ancestors` property also always exists. It may be empty. You can disable `_ancestors` for a smaller response by including the query parameter, `ancestors=false`.
 
 ### Obtaining the entire page tree with a single request
 

@@ -1,3 +1,7 @@
+## 2.10.0
+
+* Allows requests for pages to include `children=false` and `ancestors=false` query parameters that disable those respective properties on the response. Thanks to [Paul Grieselhuber](https://github.com/paulisloud) for the suggestion and original work on this feature.
+
 ## 2.9.5
 
 * Updates the ESLint configuration to `eslint-config-apostrophe@3.10` and fixes linter errors.
