@@ -1004,6 +1004,22 @@ describe('test apostrophe-headless', function() {
     });
   });
 
+  it('can patch subproperty', function(done) {
+    return http('/api/v1/apostrophe-pages/' + tabOneId, 'PATCH', { apiKey: 'page-key' }, {
+      'addresses.0.street': '100 Test Lane'
+    }, undefined, function(err, response) {
+      assert(!err);
+      assert(response.title === 'Tab One');
+      assert(response.addresses);
+      assert(response.addresses[0]);
+      assert(response.addresses[0].street === '100 Test Lane');
+      assert(response.addresses[1]);
+      assert(response.addresses[1].street === '102 Test Lane');
+      assert(!response.addresses[2]);
+      done();
+    });
+  });
+
   it('can append to addresses array', function(done) {
     return http('/api/v1/apostrophe-pages/' + tabOneId, 'PATCH', { apiKey: 'page-key' }, {
       $push: {
@@ -1016,7 +1032,7 @@ describe('test apostrophe-headless', function() {
       assert(response.title === 'Tab One');
       assert(response.addresses);
       assert(response.addresses[0]);
-      assert(response.addresses[0].street === '101 Test Lane');
+      assert(response.addresses[0].street === '100 Test Lane');
       assert(response.addresses[1]);
       assert(response.addresses[1].street === '102 Test Lane');
       assert(response.addresses[2]);

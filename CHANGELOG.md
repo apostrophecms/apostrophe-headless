@@ -1,3 +1,21 @@
+## 2.11.0
+
+* MongoDB-style "dot notation" is now properly supported in PATCH requests. That is, your request body might be:
+
+```javascript
+{
+  "body.items.0.addresses.2.street": "100 Peace Lane"
+}
+```
+
+And as long as such a path exists in the document it will be updated.
+The final path component need not already exist. The resulting document
+is still submitted through Apostrophe's normal sanitization mechanisms,
+this is not a direct MongoDB `$set` operation.
+
+* Bug fix: the use of MongoDB-style dot notation with `$pull` and other
+operators no longer incorrectly discards other subtrees of the same path.
+
 ## 2.10.0
 
 * Allows requests for pages to include `children=false` and `ancestors=false` query parameters that disable those respective properties on the response. Thanks to [Paul Grieselhuber](https://github.com/paulisloud) for the suggestion and original work on this feature.
