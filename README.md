@@ -625,26 +625,6 @@ $pullAllById: {
 
 > Array operators can be used to manipulate `array` schema fields, the widget array of an area, or the `idsField` of a join.
 
-## Patching one subproperty
-
-You may also PATCH subproperties using MongoDB-style "dot notation."
-
-For instance your request body might look like:
-
-```javascript
-{
-  "body.items.0.addresses.2.street": "100 Peace Lane"
-}
-```
-
-As long as such a path exists in the document it will be updated.
-The final path component need not already exist. The resulting document
-is still submitted through Apostrophe's normal sanitization mechanisms,
-this is not a direct MongoDB `$set` operation.
-
-Dot notation may also be used in this manner within `$pull` and
-the other operators documented above.
-
 ## Deleting a product
 
 To delete a product, make a DELETE request. Send it to:
