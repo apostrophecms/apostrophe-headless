@@ -329,93 +329,40 @@ module.exports = {
     };
 
     // Implementation detail, called for you by the PATCH route.
-    // Alters `patch` into input suitable for a `convert` call
-    // to update `existingPage` by copying content from `existingPage`
-    // based on the operators and dot notation references
-    // initially present in `patch`. When this operation is complete
-    // every top level object impacted by the patch will be present
-    // in `patch`. Implements `$push`, $pullAll` and `$pullAllById`
-    // in addition to dot notation support.
+    // Applies changes in `page` to `existingPage`, including support
+    // for the `$push`, `$pullAll`, and `$pullAllById` operators.
 
-    self.implementPatchOperators = function(existingPage, patch) {
-      const clonedBases = {};
-      if (patch.$push) {
-        append(patch.$push);
-      } else if (patch.$pullAll) {
-        _.each(patch.$pullAll, function(val, key) {
-          cloneOriginalBase(key);
-          set(patch, key, _.differenceWith(get(patch, key) || [], get(patch.$pullAll, key) || [], function(a, b) {
+    self.implementPatchOperators = function(existingPage, page) {
+      if (page.$push) {
+        append(page.$push);
+      } else if (page.$pullAll) {
+        _.each(page.$pullAll, function(val, key) {
+          _.set(page, key, _.differenceWith(_.get(existingPage, key) || [], _.get(page.$pullAll, key) || [], function(a, b) {
             return _.isEqual(a, b);
           }));
         });
-      } else if (patch.$pullAllById) {
-        _.each(patch.$pullAllById, function(val, key) {
-          cloneOriginalBase(key);
+      } else if (page.$pullAllById) {
+        _.each(page.$pullAllById, function(val, key) {
+          _.set(page, key, _.get(existingPage, key) || []);
           if (!Array.isArray(val)) {
             val = [ val ];
           }
-          set(patch, key, _.differenceWith(get(patch, key) || [], get(patch.$pullAllById, key), function(a, b) {
+          _.set(page, key, _.differenceWith(_.get(existingPage, key) || [], _.get(page.$pullAllById, key), function(a, b) {
             return (a._id || a.id) === b;
           }));
         });
       }
-      _.each(patch, function(val, key) {
-        if (key.charAt(0) !== '$') {
-          // Simple replacement with a dot path
-          if (key.indexOf('.') !== -1) {
-            cloneOriginalBase(key);
-            set(patch, key, val);
-          }
-        }
-      });
       function append(data) {
         _.each(data, function(val, key) {
-          cloneOriginalBase(key);
-          set(patch, key, get(existingPage, key) || []);
+          _.set(page, key, _.get(existingPage, key) || []);
           if (val && val.$each) {
-            set(patch, key, (get(patch, key) || []).concat(val.$each));
+            _.set(page, key, (_.get(page, key) || []).concat(val.$each));
           } else {
-            var existing = get(patch, key) || [];
+            var existing = _.get(page, key) || [];
             existing.push(val);
-            set(patch, key, existing);
+            _.set(page, key, existing);
           }
         });
-      }
-      function cloneOriginalBase(key) {
-        if (key.indexOf('.') === -1) {
-          // No need, we are replacing the base
-        }
-        const base = key.split('.')[0];
-        if (!clonedBases[base]) {
-          if (_.has(existingPage, base)) {
-            patch[base] = self.apos.utils.clonePermanent(existingPage[base]);
-          }
-          clonedBases[base] = true;
-        }
-      }
-
-      // mongo style dot notation, different from _.get and _.set alas
-
-      function get(o, path) {
-        var i;
-        path = path.split('.');
-        for (i = 0; (i < path.length); i++) {
-          var p = path[i];
-          o = o[p];
-        }
-        return o;
-      }
-
-      function set(o, path, v) {
-        var i;
-        var p;
-        path = path.split('.');
-        for (i = 0; (i < (path.length - 1)); i++) {
-          p = path[i];
-          o = o[p];
-        }
-        p = path[path.length - 1];
-        o[p] = v;
       }
     };
 
