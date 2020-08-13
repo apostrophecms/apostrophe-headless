@@ -114,7 +114,7 @@ module.exports = {
         if (matches && (matches[1] <= 9)) {
           // Must use text/plain for file upload responses in IE <= 9,
           // don't do that to other browsers
-          res.header("Content-Type", "text/plain");
+          res.header('Content-Type', 'text/plain');
         }
         // The name attribute could be anything because of how fileupload
         // controls work; we don't really care.
@@ -329,42 +329,51 @@ module.exports = {
     };
 
     // Implementation detail, called for you by the PATCH route.
-    // Applies changes in `page` to `existingPage`, including support
-    // for the `$push`, `$pullAll`, and `$pullAllById` operators.
+    // Applies changes in patch operators found in `patch` to set ordinary
+    // properties of `patch`, referring to the doc `existing` to fill in
+    // information like existing elements of arrays, etc. Then you call
+    // convert normally with `patch ` as input and the schema indicated by
+    // subsetSchemaForPatch.
+    //
+    // Includes support for the `$push`, `$pullAll`, and `$pullAllById` operators.
 
-    self.implementPatchOperators = function(existingPage, page) {
-      if (page.$push) {
-        append(page.$push);
-      } else if (page.$pullAll) {
-        _.each(page.$pullAll, function(val, key) {
-          _.set(page, key, _.differenceWith(_.get(existingPage, key) || [], _.get(page.$pullAll, key) || [], function(a, b) {
+    self.implementPatchOperators = function(existing, patch) {
+      if (patch.$push) {
+        append(existing, patch.$push);
+      } else if (patch.$pullAll) {
+        _.each(patch.$pullAll, function(val, key) {
+          _.set(patch, key, _.differenceWith(_.get(existing, key) || [], _.get(patch.$pullAll, key) || [], function(a, b) {
             return _.isEqual(a, b);
           }));
         });
-      } else if (page.$pullAllById) {
-        _.each(page.$pullAllById, function(val, key) {
-          _.set(page, key, _.get(existingPage, key) || []);
+      } else if (patch.$pullAllById) {
+        _.each(patch.$pullAllById, function(val, key) {
+          _.set(patch, key, _.get(existing, key) || []);
           if (!Array.isArray(val)) {
             val = [ val ];
           }
-          _.set(page, key, _.differenceWith(_.get(existingPage, key) || [], _.get(page.$pullAllById, key), function(a, b) {
+          _.set(patch, key, _.differenceWith(_.get(existing, key) || [], _.get(patch.$pullAllById, key), function(a, b) {
             return (a._id || a.id) === b;
           }));
         });
       }
-      function append(data) {
+      function append(existing, data) {
         _.each(data, function(val, key) {
-          _.set(page, key, _.get(existingPage, key) || []);
+          _.set(patch, key, _.get(existing, key) || []);
           if (val && val.$each) {
-            _.set(page, key, (_.get(page, key) || []).concat(val.$each));
+            _.set(patch, key, (_.get(patch, key) || []).concat(val.$each));
           } else {
-            var existing = _.get(page, key) || [];
-            existing.push(val);
-            _.set(page, key, existing);
+            var _existing = _.get(patch, key) || [];
+            _existing.push(val);
+            _.set(patch, key, _existing);
           }
         });
       }
     };
+
+    // Given a `doc` containing patch operators like `$push`, return a subset
+    // of `schema` containing the root fields that would ultimately be updated by
+    // those operations.
 
     self.subsetSchemaForPatch = function(schema, doc) {
       var idFields = {};
