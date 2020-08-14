@@ -339,7 +339,7 @@ describe('test apostrophe-headless', function() {
   });
 
   it('can GET all ten of those products with a bearer token and published: "any"', function(done) {
-    return http('/api/v1/products', 'GET', { published: "any" }, {}, bearer, function(err, response) {
+    return http('/api/v1/products', 'GET', { published: 'any' }, {}, bearer, function(err, response) {
       assert(!err);
       assert(response);
       assert(response.results);
@@ -509,7 +509,7 @@ describe('test apostrophe-headless', function() {
             }
           ]
         },
-        articlesIds: [articleId]
+        articlesIds: [ articleId ]
       }, undefined, function(err, response) {
         assert(!err);
         assert(response._id);
@@ -1334,7 +1334,7 @@ describe('test apostrophe-headless', function() {
         var product = response;
         assert(product._id);
         http('/api/v1/products/' + product._id, 'PATCH', { apiKey: 'skeleton-key' }, {
-          articlesIds: [articleId]
+          articlesIds: [ articleId ]
         }, undefined, function(err, response) {
           assert(!err);
           assert(response.title === 'Initially No Join Value');

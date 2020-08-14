@@ -1,3 +1,7 @@
+## 2.10.1
+
+* Fixed bug in PATCH feature when using dot paths.
+
 ## 2.10.0
 
 * Allows requests for pages to include `children=false` and `ancestors=false` query parameters that disable those respective properties on the response. Thanks to [Paul Grieselhuber](https://github.com/paulisloud) for the suggestion and original work on this feature.
