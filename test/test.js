@@ -34,7 +34,7 @@ describe('test apostrophe-headless', function() {
           bearerTokens: true,
           apiKeys: [ 'skeleton-key' ]
         },
-        'products': {
+        products: {
           extend: 'apostrophe-pieces',
           restApi: {
             safeDistinct: [ '_articles' ]
@@ -194,8 +194,8 @@ describe('test apostrophe-headless', function() {
       afterInit: function(callback) {
         // Should NOT have an alias!
         assert(!apos.restApi);
-        assert(apos.modules['products']);
-        assert(apos.modules['products'].addRestApiRoutes);
+        assert(apos.modules.products);
+        assert(apos.modules.products.addRestApiRoutes);
         return callback(null);
       },
       afterListen: function(err) {
@@ -478,7 +478,7 @@ describe('test apostrophe-headless', function() {
       }
     }, undefined, {
       headers: {
-        'Authorization': 'Api-Key skeleton-key'
+        Authorization: 'Api-Key skeleton-key'
       }
     }, function(err, response) {
       assert(!err);
@@ -604,7 +604,7 @@ describe('test apostrophe-headless', function() {
       },
       json: true,
       headers: {
-        'Authorization': 'ApiKey skeleton-key'
+        Authorization: 'ApiKey skeleton-key'
       }
     }, function(err, response, body) {
       assert(!err);
@@ -1199,7 +1199,7 @@ describe('test apostrophe-headless', function() {
       var product = _.find(response.results, { slug: 'product-key-product-with-join' });
       assert(typeof product.type === 'string');
       assert(typeof product.slug === 'string');
-      assert(typeof product['_articles'] === 'undefined');
+      assert(typeof product._articles === 'undefined');
       done();
     });
   });
@@ -1222,8 +1222,8 @@ describe('test apostrophe-headless', function() {
       assert(response);
       assert(response.results);
       var product = _.find(response.results, { slug: 'product-key-product-with-join' });
-      assert(Array.isArray(product['_articles']));
-      assert(product['_articles'].length === 1);
+      assert(Array.isArray(product._articles));
+      assert(product._articles.length === 1);
       done();
     });
   });
@@ -1277,8 +1277,8 @@ describe('test apostrophe-headless', function() {
       var product = _.find(response.results, { slug: 'product-key-product-with-join' });
       assert(typeof product.type === 'string');
       assert(typeof product.slug === 'string');
-      assert(Array.isArray(product['_articles']));
-      assert(product['_articles'].length === 1);
+      assert(Array.isArray(product._articles));
+      assert(product._articles.length === 1);
       done();
     });
   });

@@ -1,3 +1,7 @@
+## 2.10.2
+
+* Fixes minor ESLint errors.
+
 ## 2.10.1
 
 * Fixed bug in PATCH feature when using dot paths.

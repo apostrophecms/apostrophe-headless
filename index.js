@@ -55,7 +55,7 @@ module.exports = {
             insertToken
           ], function(err) {
             if (err) {
-              return res.status((typeof (err) !== 'object') ? err : 500).send({ 'error': 'error' });
+              return res.status((typeof (err) !== 'object') ? err : 500).send({ error: 'error' });
             } else {
               return res.send({ bearer: bearer });
             }
@@ -178,10 +178,10 @@ module.exports = {
         ], function(err) {
           if (err) {
             self.apos.utils.error(err);
-            return res.status(500).send({ 'error': 'error' });
+            return res.status(500).send({ error: 'error' });
           }
           if (!user) {
-            return res.status(401).send({ 'error': 'bearer token invalid' });
+            return res.status(401).send({ error: 'bearer token invalid' });
           }
           req.csrfExempt = true;
           req.user = user;
@@ -261,7 +261,7 @@ module.exports = {
         }
       }
 
-      return res.status(403).send({ 'error': 'invalid api key' });
+      return res.status(403).send({ error: 'invalid api key' });
 
       function getAuthorizationApiKey() {
         var header = req.headers.authorization;
