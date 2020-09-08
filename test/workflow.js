@@ -29,7 +29,7 @@ describe('test apostrophe-headless with workflow', function() {
         'apostrophe-pages': {
           restApi: true
         },
-        'products': {
+        products: {
           extend: 'apostrophe-pieces',
           restApi: true,
           name: 'product'
@@ -57,8 +57,8 @@ describe('test apostrophe-headless with workflow', function() {
       afterInit: function(callback) {
         // Should NOT have an alias!
         assert(!apos.restApi);
-        assert(apos.modules['products']);
-        assert(apos.modules['products'].addRestApiRoutes);
+        assert(apos.modules.products);
+        assert(apos.modules.products.addRestApiRoutes);
         return callback(null);
       },
       afterListen: function(err) {
