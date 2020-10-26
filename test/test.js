@@ -4,6 +4,7 @@ var cuid = require('cuid');
 var _ = require('lodash');
 var async = require('async');
 var fs = require('fs-extra');
+var path = require('path');
 
 describe('test apostrophe-headless', function() {
 
@@ -547,7 +548,7 @@ describe('test apostrophe-headless', function() {
       url: 'http://localhost:7900/api/v1/attachments',
       method: 'POST',
       formData: {
-        file: fs.createReadStream(__dirname + '/test-image.jpg')
+        file: fs.createReadStream(path.join(__dirname, '/test-image.jpg'))
       },
       json: true,
       auth: { bearer: bearer }
@@ -566,7 +567,7 @@ describe('test apostrophe-headless', function() {
       url: 'http://localhost:7900/api/v1/attachments?apikey=skeleton-key',
       method: 'POST',
       formData: {
-        file: fs.createReadStream(__dirname + '/test-image.jpg')
+        file: fs.createReadStream(path.join(__dirname, '/test-image.jpg'))
       },
       json: true
     }, function(err, response, body) {
@@ -583,7 +584,7 @@ describe('test apostrophe-headless', function() {
       url: 'http://localhost:7900/api/v1/attachments?apikey=product-key',
       method: 'POST',
       formData: {
-        file: fs.createReadStream(__dirname + '/test-image.jpg')
+        file: fs.createReadStream(path.join(__dirname, '/test-image.jpg'))
       },
       json: true
     }, function(err, response, body) {
@@ -600,7 +601,7 @@ describe('test apostrophe-headless', function() {
       url: 'http://localhost:7900/api/v1/attachments',
       method: 'POST',
       formData: {
-        file: fs.createReadStream(__dirname + '/test-image.jpg')
+        file: fs.createReadStream(path.join(__dirname, '/test-image.jpg'))
       },
       json: true,
       headers: {
@@ -620,7 +621,7 @@ describe('test apostrophe-headless', function() {
       url: 'http://localhost:7900/api/v1/attachments',
       method: 'POST',
       formData: {
-        file: fs.createReadStream(__dirname + '/test-image.jpg')
+        file: fs.createReadStream(path.join(__dirname, '/test-image.jpg'))
       },
       json: true
     }, function(err, response, body) {
