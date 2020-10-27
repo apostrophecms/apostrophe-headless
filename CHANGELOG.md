@@ -1,3 +1,7 @@
+## 2.10.3 2020-11-04
+
+* Fixes a typo in the README. Thanks to [Adrien Delannoy](https://github.com/Adrien-D) for the contribution. Updates `mocha` for a vulnerability warning, as well as ESLint.
+
 ## 2.10.2
 
 * Fixes minor ESLint errors.
