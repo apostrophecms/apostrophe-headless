@@ -51,6 +51,7 @@ module.exports = {
           var bearer;
           var user;
           return async.series([
+            emitEventBeforeLogin,
             checkCredentials,
             insertToken
           ], function(err) {
@@ -60,6 +61,14 @@ module.exports = {
               return res.send({ bearer: bearer });
             }
           });
+          function emitEventBeforeLogin(callback) {
+            return self.apos.login.callAllAndEmit('beforeLogin', 'before', req, function(err) {
+              if (err) {
+                return callback(err);
+              }
+            return callback(null);
+            });
+          }
           function checkCredentials(callback) {
             var username = self.apos.launder.string(req.body.username);
             var password = self.apos.launder.string(req.body.password);
