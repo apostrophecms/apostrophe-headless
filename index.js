@@ -62,8 +62,12 @@ module.exports = {
             }
           });
           async function emitEventBeforeLogin(callback) {
-            await self.emit('beforeLogin', req);
-            return callback(null);
+            try {
+              await self.emit('beforeLogin', req);
+              return callback(null);
+            } catch (e) {
+              return callback(e)
+            }
           }
           function checkCredentials(callback) {
             var username = self.apos.launder.string(req.body.username);
