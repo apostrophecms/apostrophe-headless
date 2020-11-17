@@ -1,6 +1,6 @@
 {
   "name": "apostrophe-headless",
-  "version": "2.10.2",
+  "version": "2.10.4",
   "description": "Use Apostrophe as a headless CMS with REST APIs for your apps",
   "main": "index.js",
   "scripts": {
@@ -36,15 +36,13 @@
   "devDependencies": {
     "apostrophe": "^2.105.0",
     "apostrophe-workflow": "^2.19.0",
-    "eslint": "^6.0.0",
-    "eslint-config-apostrophe": "^3.1.0",
-    "eslint-config-standard": "^11.0.0-beta.0",
-    "eslint-plugin-import": "^2.16.0",
-    "eslint-plugin-node": "^5.2.1",
-    "eslint-plugin-promise": "^3.6.0",
-    "eslint-plugin-standard": "^3.0.1",
+    "eslint": "^7.11.0",
+    "eslint-config-apostrophe": "^3.4.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.2",
     "fs-extra": "^4.0.2",
-    "mocha": "^5.2.0",
+    "mocha": "^7.0.0",
     "request": "^2.83.0"
   }
 }

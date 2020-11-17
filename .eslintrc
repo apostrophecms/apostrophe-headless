@@ -4,5 +4,11 @@
     "node_modules/",
     "**/node_modules/",
     "test/public/modules/"
-  ]
+  ],
+  "rules": {
+    "node/no-callback-literal": "off",
+    "quote-props": "off",
+    "dot-notation": "off",
+    "node/no-path-concat": "off"
+  }
 }

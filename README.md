@@ -955,7 +955,7 @@ Let's return to the "products" example and create a Nunjucks template to be rend
 {# Let's output the title of the piece #}
 <h4>{{ data.piece.title }}</h4>
 {# Now let's render an area as Apostrophe normally would #}
-{{ apo.area(data.piece, 'body') }}
+{{ apos.area(data.piece, 'body') }}
 {# On second thought, let's just render the first image in that area directly #}
 {% set image = apos.images.first(data.piece, 'body') %}
 {% if image %}
