@@ -66,7 +66,7 @@ module.exports = {
               await self.emit('beforeLogin', req);
               return callback(null);
             } catch (e) {
-              return callback(e)
+              return callback(e);
             }
           }
           function checkCredentials(callback) {
