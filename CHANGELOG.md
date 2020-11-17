@@ -1,3 +1,7 @@
+## 2.11.0
+
+* Added an `apostrophe-headless:beforeLogin` promise event.
+
 ## 2.10.4 2020-11-18
 
 * Eslint settings only.

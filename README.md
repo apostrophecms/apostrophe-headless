@@ -506,6 +506,10 @@ With the appropriate `Bearer` heading as for any other request. That bearer toke
 >
 > **If you submit an invalid or outdated bearer token for any request**, you will receive a `401` HTTP status, and a JSON object with an `error` property set to `'bearer token invalid'`. This is your cue to ask the user to log in again and then retry the request.
 
+## Login events
+
+You can find an `apostrophe-headless:beforeLogin` promise event which is emitted with (req) before a login attempt is evaluated.
+
 ## Inserting a product
 
 You can insert a product via a POST request. You should POST to:
