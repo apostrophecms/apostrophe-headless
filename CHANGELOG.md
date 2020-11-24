@@ -1,6 +1,6 @@
 ## 2.11.0
 
-* Added an `apostrophe-headless:beforeLogin` promise event. Thanks to Jose Garcia of swiss4ward for the contribution.
+* Added an `apostrophe-headless:beforeLogin` promise event. Thanks to Jose García of swiss4ward for the contribution.
 
 ## 2.10.4 2020-11-18
 
