@@ -61,13 +61,11 @@ module.exports = {
               return res.send({ bearer: bearer });
             }
           });
-          async function emitEventBeforeLogin(callback) {
-            try {
-              await self.emit('beforeLogin', req);
-              return callback(null);
-            } catch (e) {
-              return callback(e);
-            }
+          // In the case of an async function, async.series will await
+          // the resolution of the promise (including handling rejection)
+          // and does not pass a callback
+          async function emitEventBeforeLogin() {
+            await self.emit('beforeLogin', req);
           }
           function checkCredentials(callback) {
             var username = self.apos.launder.string(req.body.username);
