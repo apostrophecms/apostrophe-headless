@@ -6,13 +6,13 @@
 
 Just as often, projects call for a mix of the two: Apostrophe as a CMS for the pages of the site, with React-style apps "mixed in" on certain pages.
 
-The `apostrophe-headless` module provides REST APIs for content types created with Apostrophe's [pieces](http://apostrophecms.org/docs/tutorials/getting-started/reusable-content-with-pieces.html) feature. With this module, you might choose to just click "Page Settings" and lock down the "home page" of your site to "logged in users only," then use Apostrophe as a pure headless CMS... or you might mix and match. It's up to you.
+The `apostrophe-headless` module provides REST APIs for content types created with Apostrophe's [pieces](https://docs.apostrophecms.org/core-concepts/reusable-content-pieces/reusable-content-with-pieces.html) feature. With this module, you might choose to just click "Page Settings" and lock down the "home page" of your site to "logged in users only," then use Apostrophe as a pure headless CMS... or you might mix and match. It's up to you.
 
 > We'll start out by talking about pieces, because they map so well to REST concepts. But `apostrophe-headless` also supports working with pages. We recommend you read about pieces first to figure out the basics, especially authentication.
 
 ## Adding a REST API for products
 
-Let's assume you have a module called `products` that extends `apostrophe-pieces` as described in our [reusable content with pieces](http://apostrophecms.org/docs/tutorials/getting-started/reusable-content-with-pieces.html) tutorial. Now you want a REST API so your app can easily get information about pieces.
+Let's assume you have a module called `products` that extends `apostrophe-pieces` as described in our [reusable content with pieces](https://docs.apostrophecms.org/core-concepts/reusable-content-pieces/reusable-content-with-pieces.html) tutorial. Now you want a REST API so your app can easily get information about pieces.
 
 ## Install the package
 
@@ -92,7 +92,7 @@ Here are some examples:
 
 `/api/v1/products?autocomplete=che`
 
-There's much more. You can use any [cursor filter](http://apostrophecms.org/docs/tutorials/intermediate/cursors.html) that offers a `sanitize` method via the query string. It's [not hard to add custom filters](http://apostrophecms.org/docs/tutorials/intermediate/cursors.html#custom-filters) if you need to, but keep in mind that most schema field types have built-in [filter support](http://apostrophecms.org/docs/tutorials/intermediate/cursors.html).
+There's much more. You can use any [s filter](https://docs.apostrophecms.org/advanced-topics/database/cursors.html) that offers a `sanitize` method via the query string. It's [not hard to add custom filters](https://docs.apostrophecms.org/advanced-topics/database/cursors.html#custom-filters) if you need to, but keep in mind that most schema field types have built-in [filter support](https://docs.apostrophecms.org/advanced-topics/database/cursors.html#built-in-filters-every-schema-field-gets-one).
 
 To call most filters from the public API, you will need to use the `safeFilters` option to declare these filters "safe.". Rather than just `restApi: true`, write:
 
@@ -641,7 +641,7 @@ The response will be an appropriate HTTP status code.
 
 ## Inserting areas and widgets via REST
 
-Given how powerful they are, [areas and widgets](http://apostrophecms.org/docs/tutorials/getting-started/adding-editable-content-to-pages.html) in Apostrophe are surprisingly easy to work with via the REST API.
+Given how powerful they are, [areas and widgets](https://docs.apostrophecms.org/core-concepts/editable-content-on-pages/#editable-content-on-pages-with-widgets) in Apostrophe are surprisingly easy to work with via the REST API.
 
 Just bear these facts in mind:
 
