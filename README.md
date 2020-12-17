@@ -788,7 +788,7 @@ modules: {
 
 Now, POST to `/api/v1/apostrophe-images`. You'll need to supply at least `title`, `slug`, and `attachment`. The `attachment` field must contain the `file` object you received from the attachment upload API, above.
 
-> Just set `attachment` to `result.file`, where `result` is the JSON object you got back from the upload API.
+> Just set `attachment` to `result`, where `result` is the JSON object you got back from the upload API.
 
 You will receive a JSON object in response. Using the `_id` property, you can create a project that includes that file in an images widget, in an area called `thumbnail`. POST an object like this to `/api/v1/projects` to create a project with a thumbnail:
 
