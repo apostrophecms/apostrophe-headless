@@ -236,7 +236,7 @@ module.exports = {
         return next();
       }
 
-      const key = req.query.apikey || getAuthorizationApiKey();
+      const key = req.query.apikey || req.query.apiKey || getAuthorizationApiKey();
 
       let taskReq;
       if (!key) {
