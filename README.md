@@ -366,6 +366,19 @@ If your API request is being sent by jQuery as provided by Apostrophe, you're go
 
 If your API request is sent via `fetch` or another alternative to jQuery, you'll need to set the `X-XSRF-TOKEN` HTTP header to the current value of `window.apos.csrfCookieName`. This ensures the request didn't come from a sneaky form on a third-party website.
 
+## Adding CORS config
+
+It's also possible to add a specific CORS config for Headless routes. It won't protect your routes but only make sure that requests that are comming from a browser are comming from one you authorized.
+See available options [here](https://github.com/expressjs/cors#configuration-options)
+
+```javascript
+    'apostrophe-headless': {
+      cors: {
+        // CORS options
+      }
+    },
+```
+
 ## Building apps without Apostrophe UI: bearer tokens and API keys
 
 By default, the `POST`, `DELETE` and `PUT` APIs are available to logged-in users of the site. This is quite useful if you want to provide some editing features in a React or similar app that is part of your Apostrophe site.

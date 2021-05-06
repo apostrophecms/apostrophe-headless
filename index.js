@@ -38,7 +38,8 @@ module.exports = {
     };
 
     self.enableCorsHeaders = function() {
-      self.apos.app.use(self.endpoint, cors());
+      const corsConfig = (typeof self.options.cors === 'object' && self.options.cors) || {};
+      self.apos.app.use(self.endpoint, cors(corsConfig));
     };
 
     self.addRoutes = function() {
