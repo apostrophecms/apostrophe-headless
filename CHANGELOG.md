@@ -1,3 +1,6 @@
+## 2.12.0 2020-05-06
+* Adds ability to pass cors config to the module.
+
 ## 2.11.0 2020-12-02
 
 * Added an `apostrophe-headless:beforeLogin` promise event. Thanks to Jose García of swiss4ward for the contribution.
