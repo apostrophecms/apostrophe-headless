@@ -368,7 +368,7 @@ If your API request is sent via `fetch` or another alternative to jQuery, you'll
 
 ## Adding CORS config
 
-It's also possible to add a specific CORS config for Headless routes. It won't protect your routes but only make sure that requests that are comming from a browser are comming from a url you authorized.
+It's also possible to add a specific CORS configuration for headless routes. Note that this does not secure your routes against the use of scripts, `curl`, etc. It only prevents well-behaved browsers like Chrome from making unwanted cross-site requests.
 See available options [here](https://github.com/expressjs/cors#configuration-options)
 
 ```javascript
