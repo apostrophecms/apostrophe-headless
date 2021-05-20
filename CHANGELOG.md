@@ -1,4 +1,4 @@
-## 2.12.0 2020-05-06
+## 2.12.0 2021-05-20
 * Adds ability to pass cors config to the module.
 
 ## 2.11.0 2020-12-02
