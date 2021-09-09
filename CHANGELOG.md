@@ -1,3 +1,6 @@
+## 2.12.1 2021-09-10
+* Tests pass with latest `moog-require`. No code changes.
+
 ## 2.12.0 2021-05-20
 * Adds ability to pass cors config to the module.
 
