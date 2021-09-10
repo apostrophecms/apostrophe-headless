@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "apostrophe-headless": "^2.0.0",
+    "apostrophe": "^2.0.0",
+    "apostrophe-workflow": "^2.0.0"
+  }
+}
