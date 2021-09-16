@@ -170,8 +170,15 @@ module.exports = {
       if (req.url.substr(0, self.endpoint.length + 1) !== (self.endpoint + '/')) {
         return next();
       }
-      if (req.url === self.endpoint + '/login') {
+      const exceptions = self.apos.modules['apostrophe-express'].options.csrf && self.apos.modules['apostrophe-express'].options.csrf.exceptions
+        ? self.apos.modules['apostrophe-express'].options.csrf.exceptions
+        : [];
+      const isLogin = (req.url === self.endpoint + '/login');
+      const isCsrfException = exceptions.includes(req.url);
+
+      if (isLogin || isCsrfException) {
         // Login is exempt, chicken and egg
+        req.csrfExempt = true;
         return next();
       }
 
