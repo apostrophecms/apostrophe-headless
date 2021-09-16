@@ -233,13 +233,13 @@ module.exports = {
     };
 
     self.apiKeyMiddleware = function(req, res, next) {
-
       if (req.url.substr(0, self.endpoint.length + 1) !== (self.endpoint + '/')) {
         return next();
       }
 
-      var key = req.query.apikey || req.query.apiKey || getAuthorizationApiKey();
-      var taskReq;
+      const key = req.query.apikey || req.query.apiKey || getAuthorizationApiKey();
+
+      let taskReq;
       if (!key) {
         return next();
       }
@@ -248,11 +248,13 @@ module.exports = {
         taskReq = self.apos.tasks.getReq();
         req.user = taskReq.user;
         req.csrfExempt = true;
+
         return next();
       } else {
         var module = _.find(self.registeredModules, function(module) {
           return _.includes(module.options.apiKeys, key);
         });
+
         if (module) {
           taskReq = self.apos.tasks.getReq();
           req.user = taskReq.user;
@@ -265,6 +267,7 @@ module.exports = {
             req.user._permissions['admin-' + module.name] = true;
           }
           req.csrfExempt = true;
+
           return next();
         }
       }
